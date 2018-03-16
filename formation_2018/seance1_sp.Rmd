@@ -219,23 +219,6 @@ spts_df_l93@coords
 
 
 
-# DONNEES
-
-https://data.montpellier3m.fr/dataset/contours-des-communes-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/stations-velomagg-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/arrets-de-bus-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/arrets-de-tramway-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/reseau-de-tramway-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/population-2008-carroyage-insee-sur-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/reseau-de-bus-lignes-suburbaines-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/reseau-de-bus-lignes-urbaines-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/parcs-et-jardins-de-montpellier-mediterranee-metropole
-http://data.montpellier3m.fr/dataset/parcs-et-jardins-surface-de-montpellier
-https://data.montpellier3m.fr/dataset/arbres-remarquables-de-montpellier
-https://data.montpellier3m.fr/dataset/iris
-https://data.montpellier3m.fr/dataset/restaurants-bars-et-cafes-de-montpellier-mediterranee-metropole
-https://data.montpellier3m.fr/dataset/synth%C3%A8se-des-voies-en-mode-doux-de-montpellier
-
 
 
 

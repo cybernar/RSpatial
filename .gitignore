@@ -33,4 +33,11 @@ vignettes/*.pdf
 *.knit.md
 
 # data
-/data/
+**/data/
+
+# pdf + html output
+/*.pdf
+/*.html
+
+RSpatial.Rproj
+.Rproj.user
