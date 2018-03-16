@@ -1,0 +1,82 @@
+---
+title: "La package raster"
+author: "Cyril Bernard (CEFE-CNRS)"
+date: "29 janvier 2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Présentation du package raster
+
+## Le package raster
+
+Grâce au package **raster**, il est possible dans R de traiter des données au format raster (grille de données spatiales). Le package offre une palette d'outils assez comparable à celle aux logiciels SIG raster tels que GRASS, IDRISI, ESRI Spatial Analyst, SAGA, etc.
+
+- Calculatrice raster
+- Résumés statistiques (distribution, min et max, stats zonales)
+- Utilisation de masque
+- Fonctions de voisinage (focal)
+
+## Modèle de données
+
+Le package **raster** gère les raster à 1 couche (_raster_) ou à plusieurs couches (_brick_ ou _stack_).
+
+R et le package raster offre plus de souplesse et de possibilités qu'un SIG Bureautique lorsque le nombre de couches de données superposées est important.
+
+## Packages complémentaires : lecture / écriture de fichiers raster
+
+Le package **raster** gère par défaut les formats GeoTiff (.tif), ESRI Ascii (.asc), ENVI (.nvi), IDRISI (.rst), ESRI BIL (.bil). 
+D'autres formats sont disponibles via le package rgdal.
+
+## Packages complémentaires : gdalUtils
+
+Les fonctions du package **raster** sont généralement efficaces en terme de calcul. Mais les fonctions rasterize (rasterisation de données vectorielles) et projectRaster (reprojection dans un autre système de coordonnées) laisse à désirer. 
+
+Il est préférable dans ces 2 cas d'utiliser les fonctions gdal_rasterize et gdalwarp du package gdalUtils qui sont très rapides.
+
+## Packages complémentaires : outils métiers
+
+Les fonctionnalités proposées par **raster** sont étoffées ; cependant le package ne propose pas d'outils "métiers" pour des discipline très spécifique comme l'hydrologie (calcul de bassin versant), l'aménagement (chemin de moindre coût), l'énergie (rayonnement solaire). Ces outils se trouvent généralement dans des packages tierces.
+
+Exemple : le package **gdistance** pour les distances et chemins de moindre coût.
+
+# Le package raster : COURS
+
+## La classe raster
+
+## Etendue, résolution, système de coordonnées, valeur NODATA
+
+## Un raster "from scratch"
+
+## Enregistrer un raster
+
+## La classe brick
+
+## La classe stack
+
+## Opérateurs arithmétiques et logiques
+
+## Extraire ou modifier la valeur d'un pixel avec la ligne et la colonne
+
+## Extraire ou modifier la valeur d'un pixel avec les coordonnées géographiques
+
+
+## Outils de résumés statistiques
+cellStats
+freq
+zonal
+extract
+
+## 
+
+## quand utiliser gdalUtils ?
+
+
+La package propose des fonctionnalités de base (lecture, écriture, calculatrice raster) et plus plus évolué
+
+
+Les possibilités  Les outils disponibles dans le package et de faire 
+

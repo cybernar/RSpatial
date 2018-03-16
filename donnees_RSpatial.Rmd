@@ -1,0 +1,20 @@
+---
+title: 'R-Spatial : présentation des données utilisées'
+author: "Cyril Bernard (CEFE-CNRS)"
+date: "30 janvier 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## sp: COURS
+- 7 points dans Montpellier
+- un fichier de ligne de tramway ?
+- 
+
+## sp: EXERCICES
+
+over:
+dist matrix:
