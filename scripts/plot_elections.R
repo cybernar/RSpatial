@@ -19,3 +19,6 @@ file2 <- "VilleMTP_MTP_Elections.csv"
 download.file(url1, file1)
 download.file(url2, file2)
 
+# plot
+library(sp)
+library(spplot)
