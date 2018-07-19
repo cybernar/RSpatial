@@ -21,6 +21,7 @@ dist matrix:
 
 ## MMM liens
 
+
 # DONNEES
 
 - https://data.montpellier3m.fr/dataset/contours-des-communes-de-montpellier-mediterranee-metropole
@@ -43,14 +44,14 @@ dist matrix:
 - http://data.montpellier3m.fr/sites/default/files/ressources/VilleMTP_MTP_Elections.csv
 - http://data.montpellier3m.fr/sites/default/files/ressources/VilleMTP_MTP_BureauxVote.geojson
 
+## Télécharger les données
 
-
-## Téléchargement 
+```{r}
 setwd("data")
 url1 <- "https://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_Limites.zip"
 url2 <- "https://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_ArretsBusUrb.zip"
 url3 <- "https://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_ArretsTram.zip"
-
-
 download.file(URL,"Rmeeting.zip")
 unzip("Rmeeting.zip")
+```
+
