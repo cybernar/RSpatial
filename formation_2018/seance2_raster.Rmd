@@ -179,6 +179,7 @@ plot(rast_sum_precip)
 
 Nous 
 Formule de l'indice de végétation normalisé : ```ndvi = (pir - r) / (pir + r)```
+
 ```{r Extraire les couches R et PIR et calculer le NDVI}
 rast_red <- raster(rast_sentinel2, layer=3)
 rast_nir <- raster(rast_sentinel2, layer=4)
@@ -191,14 +192,17 @@ rast_ndvi2 <- calc(rast_sentinel2, f_ndvi)
 writeRaster(rast_ndvi, "NDVI_S2A_20180504_T31UCR.tif", overwrite=T)
 writeRaster(rast_ndvi2, "NDVI2_S2A_20180504_T31UCR.tif", overwrite=T)
 ```
+
 ## Exercice 3 : calcul de l'indice de brillance
 Formule : IC = 3 * V - R - 100
 Formule : IB = sqrt(NIR^2 + R)
+
 ```{r Exercice 3 : calculatrice raster}
 rast_ib <- sqrt(rast_nir ^ 2 + rast_red)
 ```
 
 ## Outils de résumés statistiques
+
 ```{r Résumé statistiques, distribution des pixels}
 cellStats(rast_sentinel2, mean)
 cellStats(rast_sentinel2, sd)
@@ -323,44 +327,46 @@ plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 ```{r Lecture nomenclature CLC avec libellé et couleur}
 rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
 plot(rast_clc80_niv2)
+# lire fichier nomenclature, feuille 2
 f_xls <- "data/CLC/CLC_nomenclature.xlsx"
 library(openxlsx)
+library(dplyr)
+library(tmap)
 df_nom <- read.xlsx(f_xls, sheet=2)
-df_nom2 <- transmute(df_nom,
-                 ID = as.numeric(code_clc_niveau_2),
+df_nom <- transmute(df_nom,
+                 CODE = as.numeric(code_clc_niveau_2),
                  LIB_FR = libelle_fr,
                  PAL = rgb(as.numeric(rouge),
                            as.numeric(vert),
                            as.numeric(bleu),
                            maxColorValue = 255)
                  )
-```
-
-## 'RATifier' un raster avec des valeurs catégorielles
-La 'RAT' (_Raster Attribute Table_) permet d'associer des libellés aux différentes catégories codées sous forme d'entier dans le raster.
-```{r Créer RAT}
-rast_clc_categ <- as.factor(rast_clc80_niv2)
-# ou bien, pour la fréquence des catégories :
-rast_clc_categ <- ratify(rast_clc80_niv2, count=T)
-df_clc_categ <- levels(rast_clc_categ)[[1]]
-df_clc_categ <- inner_join(df_clc_categ, df_nom2, by="ID")
-levels(rast_clc_categ)[[1]] <- df_clc_categ
-```
-
-
-```{r tmap et raster}
-library(tmap)
-tm_shape(rast_clc_categ) +
-  tm_raster(col="LIB_FR", style="cat")
+df_nom <- filter(df_nom, CODE %in% unique(rast_clc80_niv2))
 tm_shape(rast_clc80_niv2) +
-  tm_raster(style="cat", palette = df_clc_categ$PAL)
-tm_shape(rast_clc_categ) +
-  tm_raster("CLC12_D080_NIV2", style="cat", palette = df_clc_categ$PAL)
+  tm_raster(style="cat", palette=df_nom$PAL, labels=df_nom$LIB_FR, title="Corine Land Cover 2012")
+tm_shape(rast_clc80_niv2) +
+  tm_raster(style="cat", palette=df_nom$PAL, title="Corine Land Cover 2012")
 ```
 
 ## Utilisation des masques
-Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés.
-La fonction mask permet de définir un masque qu'on pourra ensuite appliquer à d'autre raster.
+Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés. 
+Le masque peut être défini de 2 manières :
+- à partir d'un objet SpatialPolygons (issu d'1 shapefile)
+- à partir d'un raster dont les pixels à ignorer portent le valeur NA
+
+La fonction mask permet d'appliquer un masque à d'autre raster.
+
+Exercice : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
+Appliquer ce masque sur le raster NDVI.
+```{r}
+rast_mask <- rast_clc80_niv2
+rast_bool <- rast_clc80_niv2 %in% c(42,52)
+rast_mask[rast_bool] <- NA
+rast_ndvi <- raster("NDVI_S2A_20180504_T31UCR.tif")
+plot(mask(rast_ndvi, rast_mask),col=pal_YlGr,breaks=lim)
+
+```
+
 
 
 
