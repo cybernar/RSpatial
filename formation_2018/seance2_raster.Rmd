@@ -31,7 +31,7 @@ R et le package raster offre plus de souplesse et de possibilités qu'un SIG Bur
 ## Packages complémentaires : lecture / écriture de fichiers raster
 
 Le package **raster** gère par défaut les formats GeoTiff (.tif), ESRI Ascii (.asc), ENVI (.nvi), IDRISI (.rst), ESRI BIL (.bil). 
-D'autres formats sont disponibles via le package rgdal.
+D'autres formats sont disponibles via le package **rgdal**.
 
 
 ## §§§ Packages complémentaires : gdalUtils
@@ -48,9 +48,7 @@ Exemple : le package **gdistance** pour les distances et chemins de moindre coû
 
 # Le package raster : COURS
 
-## La classe raster
-
-La classe raster 
+## Les classes Raster et RasterLayer
 
 ## Un raster "from scratch"
 
@@ -90,6 +88,7 @@ plot(rast_vide)
 
 ## Lire un raster
 ```{r Lecture fichier GeoTIFF}
+setwd("D:/GitRepo/RSpatial/formation_2018")
 rast_prec01 <- raster("data/WorldClim/wc2.0_10m_prec_01.tif")
 rast_prec01
 ```
@@ -110,42 +109,44 @@ extract(rast_prec01, villes_coords)
 
 ## La gestion des 'NA' (absence de données) dans les fichiers raster
 Notre raster "précipitation janvier" contient les pixels "sans données"
-```{r Les pixels peuvent comporter des valeurs 'NA'}
+```{r Présence de valeurs NA}
 head(rast_prec01[])
 ```
 Dans un fichier raster, chaque pixel a une valeur numérique. 
-```{r}
+```{r Lire les caractéristiques du fichier raster avec gdalinfo}
 library(gdalUtils)
 gdalinfo("data/WorldClim/wc2.0_10m_prec_01.tif")
 ```
 
-## Enregistrer un raster
-```{r }
+## Enregistrer un raster dans un format SIG
+```{r Enregistrer un raster}
 writeRaster(rast_vide, "data/rast_vide.tif")
-writeRaster(rast_int, "data/rast_vide.asc", format="ascii")
-writeRaster(rast_int, "data/rast_vide.asc", format="ascii", overwrite=T, NAflag=-99)
 rast_int <- trunc(rast_vide)
 rast_int[2] <- NA
+writeRaster(rast_int, "data/rast_vide.asc", format="ascii")
+writeRaster(rast_int, "data/rast_vide.asc", format="ascii", overwrite=T, NAflag=-99)
 writeRaster(rast_int, "data/rast_integer.tif", datatype='INT2S')
 ```
 
 ## Caractéristique de la classe Raster
-```{r}
+```{r Classe Raster et héritage}
 getClass("Raster")
 ```
 
 ## La classe brick
 Une "brick" est un raster multi-couches issu d'1 fichier multi-couches.
-```{r}
-rast_l8 <- brick("data/Landsat8/l8_20171121_extr.tif")
-rast_l8
-nlayers(rast_l8)
-plot(rast_l8)
+```{r Lire une image satellite}
+rast_sentinel2 <- brick("data/Sentinel2/S2_Marquenterre_20180504.tif")
+rast_sentinel2
+nlayers(rast_sentinel2)
+plot(rast_sentinel2)
 ```
 
-Pour obtenir une composition colorée RGB, utiliser la fonction plotRGB
-```{r}
-plotRGB(rast_l8, stretch="lin")
+Pour obtenir une composition colorée RGB, utiliser la fonction plotRGB. 
+Remarque : dans ce fichier .tif, les bandes 1, 2 et 3 correspondent respectivement au bleu, vert et rouge dans le rayonnement visible. La bande 4 correspond au proche-infrarouge.
+```{r Composition colorée RGB}
+plotRGB(rast_sentinel2, r=3, g=2, b=1, stretch="lin")
+plotRGB(rast_sentinel2, r=4, g=3, b=2, stretch="lin")
 ```
 
 
@@ -155,7 +156,7 @@ C'est donc un assemblage de plusieurs rasters à superposer. Il est possible de 
 Pour travailler proprement, utiliser en entrée des rasters de même étendue et de même résolution.
 Exemple : création d'un objet "stack" avec les précipitations sur 12 mois.
 
-```{r}
+```{r Création d'une stack à partir de 12 fichiers GeoTIFF}
 # liste des fichiers wc2*.tif dans le répertoire WorldClim
 list_fich <- list.files(path="data/WorldClim", pattern="wc2.*\\.tif", full.names=T)
 rast_precip <- stack(list_fich, quick=T)
@@ -168,19 +169,203 @@ plot(rast_precip)
 ## Exercice 2
 Extraire les valeurs précipitation sur 12 mois pour Montpellier et Paris avec extract.
 Puis générer un nouveau raster avec la somme des précipitations annuelles (utiliser la fonction calc)
-```{r}
+```{r Exercice 2 : extraction de valeurs et calcul sur une stack}
 villes_precip <- extract(rast_precip, villes_coords)
 rast_sum_precip <- calc(rast_precip, fun=sum)
 plot(rast_sum_precip)
 ```
 
-## Outils de résumés statistiques
-cellStats
-freq
-zonal
-extract
+## Calculatrice raster
 
-## 
+Nous 
+Formule de l'indice de végétation normalisé : ```ndvi = (pir - r) / (pir + r)```
+```{r Extraire les couches R et PIR et calculer le NDVI}
+rast_red <- raster(rast_sentinel2, layer=3)
+rast_nir <- raster(rast_sentinel2, layer=4)
+rast_ndvi <- (rast_nir - rast_red) / (rast_nir + rast_red)
+plot(rast_ndvi)
+f_ndvi <- function(v) {
+  (v[4]-v[3])/(v[4]+v[3])
+}
+rast_ndvi2 <- calc(rast_sentinel2, f_ndvi)
+writeRaster(rast_ndvi, "NDVI_S2A_20180504_T31UCR.tif", overwrite=T)
+writeRaster(rast_ndvi2, "NDVI2_S2A_20180504_T31UCR.tif", overwrite=T)
+```
+## Exercice 3 : calcul de l'indice de brillance
+Formule : IC = 3 * V - R - 100
+Formule : IB = sqrt(NIR^2 + R)
+```{r Exercice 3 : calculatrice raster}
+rast_ib <- sqrt(rast_nir ^ 2 + rast_red)
+```
+
+## Outils de résumés statistiques
+```{r Résumé statistiques, distribution des pixels}
+cellStats(rast_sentinel2, mean)
+cellStats(rast_sentinel2, sd)
+hist_ndvi <- freq(rast_ndvi, digits=2)
+tail(hist_ndvi)
+
+library(ggplot2)
+ggplot(data=data.frame(NDVI=rast_ndvi[])) +
+  geom_histogram(mapping=aes(x=NDVI), binwidth=0.01)
+
+```
+
+## Rastériser un shapefile
+
+Rastériser = transformer les données vectorielles en raster.
+Il existe 3 moyens de rastériser des données issues d'un shapefile avec R :
+- avec le package raster, fonction rasterize. Très lent en cas de données volumineuses.
+- avec le package gdalUtils, fonction gdal_rasterize. Très efficace.
+- avec le package fasterize : uniquement pour les données vectorielles de type polygone.
+
+## Exemple avec Corine Land Cover
+Dans les exemples suivants, nous transformerons en raster le fichier CLC12_D080_RGF.shp.
+Les valeurs à rastériser (Code CLC niveau 3) se trouvent dans le champ CODE_12 (type String). Dans le raster en sortie, les codes CLC devront être enregistrés en tant qu'entier (INT2U). 
+Le raster obtenu, pour pouvoir être croisé avec les données satellitaires Sentinel, devra partager avec le raster Sentinel2 les caratéristiques suivantes :
+- Système de coordonnées = UTM31N WGS84 (EPSG:32631)
+- ULX, ULY = 395000,5575000
+- Résolution = 10,10
+- Format=GeoTIFF
+Dans la foulée nous générerons également 2 autres raster avec les niveaux 1 et 2 de nomenclature.
+
+## Conversion en UTM31N
+Le fichier de départ CLC12_D080_RGF.shp est en Lambert 93 (EPSG:2154). La première tâche est de le convertir en UTM31N WGS84 (EPSG:32631). Il faut également ajouter 3 champs NIV3_12, NIV2_12 et NIV1_12 qui contiendront les codes en entier pour les 3 niveaux de détails de la nomenclature.
+```{r}
+library(sp)
+library(rgdal)
+shp_clc80_l93 <- readOGR(dsn="data/CLC", layer="CLC12_D080_RGF")
+shp_clc80_utm31n <- spTransform(shp_clc80_l93, CRS("+init=EPSG:32631"))
+code_12 <- shp_clc80_utm31n$CODE_12 # attention factor
+shp_clc80_utm31n$NIV3_12 <- as.numeric(levels(code_12))[code_12]
+shp_clc80_utm31n$NIV2_12 <- as.numeric(substr(levels(code_12),1,2))[code_12]
+shp_clc80_utm31n$NIV1_12 <- as.numeric(substr(levels(code_12),1,1))[code_12]
+head(shp_clc80_utm31n@data)
+writeOGR(shp_clc80_utm31n, dsn="data/CLC", layer="CLC12_D080_UTM31N", 
+         driver="ESRI Shapefile", overwrite_layer=T)
+```
+
+
+## Rasterisation avec le package raster
+```{r Exemple rasterize}
+rast_copie <- raster(rast_sentinel2, layer=1)
+
+start_time <- Sys.time()
+rast_clc80_niv3 <- rasterize(shp_clc80_utm31n, rast_copie, "NIV3_12", 
+                             filename="data/CLC/CLC12_D080_NIV3.tif", datatype="INT2S", 
+                             format="GTiff", overwrite=T, NAflag=-99)
+Sys.time() - start_time
+```
+
+## Rasterisation avec le package gdalUtils
+```{r Exemple gdal_rasterize}
+library(gdalUtils)
+f_in <- "data/CLC/CLC12_D080_UTM31N.shp"
+f_out <- "data/CLC/CLC12_D080_NIV2.tif"
+ext_in <- extent(rast_sentinel2)
+te_in <- ext_in[c(1,3,2,4)]
+start_time <- Sys.time()
+gdal_rasterize(src_datasource=f_in,
+               dst_filename=f_out,
+               a="NIV2_12",
+               of="GTiff",
+               a_srs="EPSG:32631",
+               a_nodata=-99,
+               te=te_in,
+               tr=c(10,10),
+               ot="Int16"
+               )
+Sys.time() - start_time
+extent(rast_sentinel2)
+```
+
+## Rasterisation avec sf et fasterize
+Utilisation du package fasterize :
+- uniquement pour les shapefile de type "polygone"" !
+- en conjonction avec sf
+
+Voir https://github.com/ecohealthalliance/fasterize
+
+```{r Exemple fasterize}
+library(sf)
+library(fasterize) 
+f_in <- "data/CLC/CLC12_D080_UTM31N.shp"
+f_out <- "data/CLC/CLC12_D080_NIV1.tif"
+shp_in <- st_read(f_in)
+rast_copie <- raster(rast_sentinel2, layer=1)
+start_time <- Sys.time()
+rast_clc80_niv1 <- fasterize(shp_in, rast_copie, field = "NIV1_12")
+writeRaster(rast_clc80_niv1, filename=f_out, 
+            datatype="INT2S", format="GTiff", overwrite=T, NAflag=-99)
+Sys.time() - start_time
+```
+
+## Plus sur les rasters de catégories
+
+
+## Plus sur plot
+Paramètres à connaître :
+- col = palette de couleur
+- colNA = couleur des pixels NA
+- xlab, ylab = x-axis, y-axis label
+- breaks = 
+
+```{r Améliorons plot (1/2)}
+library(RColorBrewer)
+pal_YlGr <- brewer.pal(5,"YlGn")
+lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
+plot(rast_ndvi)
+plot(rast_ndvi,col=pal_YlGr)
+plot(rast_ndvi,col=pal_YlGr,breaks=lim)
+
+```
+
+```{r Lecture nomenclature CLC avec libellé et couleur}
+rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
+plot(rast_clc80_niv2)
+f_xls <- "data/CLC/CLC_nomenclature.xlsx"
+library(openxlsx)
+df_nom <- read.xlsx(f_xls, sheet=2)
+df_nom2 <- transmute(df_nom,
+                 ID = as.numeric(code_clc_niveau_2),
+                 LIB_FR = libelle_fr,
+                 PAL = rgb(as.numeric(rouge),
+                           as.numeric(vert),
+                           as.numeric(bleu),
+                           maxColorValue = 255)
+                 )
+```
+
+## 'RATifier' un raster avec des valeurs catégorielles
+La 'RAT' (_Raster Attribute Table_) permet d'associer des libellés aux différentes catégories codées sous forme d'entier dans le raster.
+```{r Créer RAT}
+rast_clc_categ <- as.factor(rast_clc80_niv2)
+# ou bien, pour la fréquence des catégories :
+rast_clc_categ <- ratify(rast_clc80_niv2, count=T)
+df_clc_categ <- levels(rast_clc_categ)[[1]]
+df_clc_categ <- inner_join(df_clc_categ, df_nom2, by="ID")
+levels(rast_clc_categ)[[1]] <- df_clc_categ
+```
+
+
+```{r tmap et raster}
+library(tmap)
+tm_shape(rast_clc_categ) +
+  tm_raster(col="LIB_FR", style="cat")
+tm_shape(rast_clc80_niv2) +
+  tm_raster(style="cat", palette = df_clc_categ$PAL)
+tm_shape(rast_clc_categ) +
+  tm_raster("CLC12_D080_NIV2", style="cat", palette = df_clc_categ$PAL)
+```
+
+## Utilisation des masques
+Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés.
+La fonction mask permet de définir un masque qu'on pourra ensuite appliquer à d'autre raster.
+
+
+
+## Exercice 4 : afficher la distribution du NDVI pour les zones de cultures
+
 
 ## quand utiliser gdalUtils ?
 
