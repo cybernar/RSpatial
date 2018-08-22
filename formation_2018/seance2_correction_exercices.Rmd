@@ -1,0 +1,98 @@
+---
+title: "Le package raster : correction des exercices"
+author: "Cyril Bernard (CEFE-CNRS)"
+date: "17 juillet 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Le package raster : correction des exercices
+
+## Chargement du package et chemin d'accès des données
+```{r Lecture fichier GeoTIFF}
+library(raster)
+setwd("D:/GitRepo/RSpatial/formation_2018")
+```
+
+## Exercice 1 : extraire des valeurs
+
+Déterminer les précipitations du mois de janvier pour Montpellier (3.8°E,43.6°N) et Paris (2.3°E, 48.8°N)
+
+```{r Exercice 1: données}
+# lecture du raster : précipitations janvier
+rast_prec01 <- raster("data/WorldClim/wc2.0_10m_prec_01.tif")
+# créer une matrice avec x et y en colonnes
+villes_coords <- matrix(c(3.8, 2.3, 43.6, 48.8), ncol=2, dimnames=list(c("MTP","PAR"), c("long","lat")))
+villes_coords
+```
+
+```{r Exercice 1: extraction de valeur avec des points}
+# extraction methode 1 : determiner l'index des pixels avec cellFromXY, puis chercher la valeur
+villes_ncell <- cellFromXY(rast_prec01,villes_coords)
+rast_prec01[villes_ncell]
+# methode 2 : avec extract
+extract(rast_prec01, villes_coords)
+```
+
+## Exercice 2 : algèbre raster
+Calculons l'indice de brillance et l'indice de cuirasse à partir de notre image satellite.
+Formule : IB = sqrt(NIR^2 + R)
+Formule : IC = 3 * V - R - 100
+
+```{r Exercice 2 : calculatrice raster}
+# indice de brillance
+rast_ib <- sqrt(rast_nir ^ 2 + rast_red)
+# indice de cuirasse
+rast_green <- raster(rast_sentinel2, layer=2)
+rast_ic <- 3 * rast_green - rast_red - 100
+```
+
+
+## Exercice 3 : opérations sur un raster multi-couches 
+Création d'un objet "stack" avec les précipitations sur 12 mois.
+
+```{r Création d une stack à partir de 12 fichiers GeoTIFF}
+# liste des fichiers wc2*.tif dans le répertoire WorldClim
+list_fich <- list.files(path="data/WorldClim", pattern="wc2.*\\.tif", full.names=T)
+rast_precip <- stack(list_fich, quick=T)
+rast_precip
+names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MAY", "PREC.JUN",
+                        "PREC.JUL", "PREC.AUG", "PREC.SEP", "PREC.OCT", "PREC.NOV", "PREC.DEC")
+plot(rast_precip)
+```
+
+A) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
+```{r Exercice 3A : extraction de valeurs et calcul sur une stack}
+villes_precip <- extract(rast_precip, villes_coords)
+```
+
+B) Générer un nouveau raster avec les précipitations annuelles (utiliser la fonction `calc` pour additionner les 12 mois)
+```{r Exercice 3B : extraction de valeurs et calcul sur une stack}
+rast_prec_annuel <- calc(rast_precip, fun=sum)
+```
+
+C) Il est possible de calculer la somme d'une autre manière, avec une expression plus intuitive que `calc`. Chercher comment dans l'aide de la fonction calc (`?calc`)
+```{r Exercice 3C : sum}
+rast_prec_annuel2 <- sum(rast_precip)
+```
+
+D) Afficher les précipitations annuelles dans un dégradé de bleu.
+```{r Exercice 3D : plot}
+library(RColorBrewer)
+pal_blues <- brewer.pal(8,"Blues")
+plot(rast_prec_annuel, 
+     col=pal_blues, colNA="grey", 
+     main="Précipitations annuelles")
+```
+
+E) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
+```{r Exercice 3E : which.min}
+cellStats(rast_prec_annuel, max)
+i <- which.max(rast_prec_annuel)
+veryrainyplace <- xyFromCell(rast_prec_annuel, i)
+```
+
+
