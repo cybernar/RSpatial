@@ -36,8 +36,8 @@ vignettes/*.pdf
 **/data/
 
 # pdf + html output
-/*.pdf
-/*.html
+*.pdf
+*.html
 
 RSpatial.Rproj
 .Rproj.user

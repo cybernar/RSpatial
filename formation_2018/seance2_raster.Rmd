@@ -260,7 +260,7 @@ plot(rast_precip)
 ```
 
 ## Extraire une couche raster simple (RasterLayer) à partir d'un raster multi-couche (RasterBrick ou RasterStack)
-Exemple : extraite les les couches Rouge et Proche InfraRouge de l'image satellite.
+Exemple : extraire les couches _Rouge_ et _Proche InfraRouge_ de l'image satellite.
 ```{r Extraire les couches R et PIR}
 rast_red <- raster(rast_sentinel2, layer=3)
 rast_nir <- raster(rast_sentinel2, layer=4)
@@ -284,6 +284,7 @@ plot(rast_ndvi)
 Calculons à partir de notre image satellite A) l'indice de brillance et B) l'indice de cuirasse .
 
 Les formules sont :
+
 * IB = sqrt(NIR^2 + R)
 * IC = 3 * V - R - 100
 
@@ -309,29 +310,29 @@ rast_ndvi2 <- calc(rast_sentinel2, f_ndvi)
 ```
 
 ## Exercice 3 : opérations sur un raster multi-couches 
-A) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
+Q1) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
 ```{r Exercice 3A : extraction de valeurs et calcul sur une stack, eval=FALSE}
 villes_precip <- extract(___________, _____________)
 ```
 
-B) Générer un nouveau raster avec les précipitations annuelles (utiliser la fonction `calc` pour additionner les 12 mois)
+Q2) Générer un nouveau raster avec les précipitations annuelles (utiliser la fonction `calc` pour additionner les 12 mois)
 ```{r Exercice 3B : extraction de valeurs et calcul sur une stack, eval=FALSE}
 rast_prec_annuel <- calc(___________, _______)
 ```
 
-C) Il est possible de calculer la somme d'une autre manière, avec une expression plus intuitive que `calc`. Chercher comment dans l'aide de la fonction calc (`?calc`)
+Q3) Il est possible de calculer la somme d'une autre manière, avec une expression plus intuitive que `calc`. Chercher comment dans l'aide de la fonction calc (`?calc`)
 ```{r Exercice 3C : sum, eval=FALSE}
 rast_prec_annuel2 <- sum(___________)
 ```
 
 ## Exercice 3 : opérations sur un raster multi-couches (suite)
-D) Afficher les précipitations annuelles dans un dégradé de bleu.
+Q4) Afficher les précipitations annuelles dans un dégradé de bleu.
 ```{r Exercice 3D : plot, eval=FALSE}
 pal_blues <- brewer.pal(8,"Blues")
 plot(_______________, col=pal_blues, colNA="grey", main="Précipitations annuelles")
 ```
 
-E) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
+Q4) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
 ```{r Exercice 3E : which.min , eval=FALSE}
 cellStats(_______________, ___)
 i <- which.max(_______________)
@@ -352,7 +353,7 @@ hist_ndvi <- freq(rast_ndvi, digits=2)
 tail(hist_ndvi)
 ```
 
-## HOWTO : Voir la distribution des valeurs avec ggplot2
+## HOWTO : distribution des valeurs avec ggplot2
 ```{r distribution des valeurs avec ggplot2}
 library(ggplot2)
 ggplot(data=data.frame(NDVI=rast_ndvi[])) +
@@ -474,24 +475,42 @@ Sys.time() - start_time
 # TP4. Visualisation des données raster
 
 ## Plus sur plot
-Paramètres à connaître :
+Des paramètres à connaître :
+
 - col = palette de couleur
 - colNA = couleur des pixels NA
 - xlab, ylab = x-axis, y-axis label
-- breaks = 
+- breaks = bornes (exemple : 5 bornes pour 4 couleurs)
 
-```{r Améliorons plot (1/2)}
+## Plus sur plot : "plot de base"
+```{r Améliorons plot (1/3)}
+plot(rast_ndvi)
+```
+
+## Plus sur plot : "palette ColorBrewer"
+```{r Améliorons plot (2/3)}
+library(RColorBrewer)
+pal_YlGr <- brewer.pal(5,"YlGn")
+plot(rast_ndvi,col=pal_YlGr)
+```
+
+## Plus sur plot : "palette + bornes"
+```{r Améliorons plot (3/3)}
 library(RColorBrewer)
 pal_YlGr <- brewer.pal(5,"YlGn")
 lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
-plot(rast_ndvi)
-plot(rast_ndvi,col=pal_YlGr)
 plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 ```
 
-```{r Lecture nomenclature CLC avec libellé et couleur}
+## HOWTO : Corine L C avec couleurs standardisées ?
+```{r Plot de base CLC}
 rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
 plot(rast_clc80_niv2)
+```
+
+
+## HOWTO : tmap + raster + palette Hexa (début)
+```{r Lecture nomenclature CLC avec libellé et couleur 1}
 # lire fichier nomenclature, feuille 2
 f_xls <- "data/CLC/CLC_nomenclature.xlsx"
 library(openxlsx)
@@ -507,28 +526,35 @@ df_nom <- transmute(df_nom,
                            maxColorValue = 255)
                  )
 df_nom <- filter(df_nom, CODE %in% unique(rast_clc80_niv2))
+```
+
+## HOWTO : tmap + raster + palette Hexa (suite et fin)
+```{r Lecture nomenclature CLC avec libellé et couleur 2}
 tm_shape(rast_clc80_niv2) +
   tm_raster(style="cat", palette=df_nom$PAL, labels=df_nom$LIB_FR, title="Corine Land Cover 2012")
 tm_shape(rast_clc80_niv2) +
   tm_raster(style="cat", palette=df_nom$PAL, title="Corine Land Cover 2012")
+
 ```
-
-
 
 
 # Masques. Statistiques zonales. Statistiques focales.
 
 ## Utilisation des masques
 Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés. 
+
 Le masque peut être défini de 2 manières :
+
 - à partir d'un objet SpatialPolygons (issu d'1 shapefile)
 - à partir d'un raster dont les pixels à ignorer portent le valeur NA
 
 La fonction `mask` permet d'appliquer un masque à d'autre raster.
 
 ## Exercice 
-Exercice : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
+
+**Exercice** : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
 Appliquer ce masque sur le raster NDVI.
+
 ```{r Exercice 5: masques}
 rast_mask <- rast_clc80_niv2
 rast_bool <- rast_clc80_niv2 %in% c(42,52)
