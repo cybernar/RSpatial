@@ -1,0 +1,21 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# subdir
+/data
+/knitted
+/media
+/seance1_sp_files
+
+# pdf + html output
+*.pdf
+*.html
+*.png
+*.md
+
+RSpatial.Rproj
+.Rproj.user
