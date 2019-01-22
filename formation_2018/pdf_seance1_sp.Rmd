@@ -1,7 +1,7 @@
 ---
 title: "Le package sp"
 author: "Cyril Bernard (CEFE-CNRS)"
-date: "22 novembre 2018"
+date: "22 janvier 2019"
 output: pdf_document
 ---
 
@@ -57,6 +57,8 @@ Heureusement le package **sf** est arrivé ! Il est beaucoup plus rapide et simp
 
 
 
+
+
 # 2. TP : les classes de données spatiales dans sp
 
 ## 2.1. Les classes Spatial*
@@ -76,8 +78,9 @@ name <- c("Agropolis","Bois de Montmaur","CEFE",
           "Station météo TE","FDS Bâtiment 4","Statue Peyrou")
 lon <- c(3.86921, 3.86898, 3.86450, 3.86306, 3.86282, 3.87093)
 lat <- c(43.64541, 43.64266, 43.63881, 43.63885, 43.63464, 43.61165)
+categ <- c("A", "B", "A", "A", "A", "B")
 coul <- c("red", "green", "red", "red", "red", "green")
-df <- data.frame(name, lon, lat, coul)
+df <- data.frame(name, lon, lat, coul, categ)
 ```
 
 
@@ -126,47 +129,43 @@ slotNames(sp_pts_df)
 
 ## 2.6. Relation d'héritage entre les classes Spatial\*, SpatialPoints\* et SpatialPointsDataFrame
 
-Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.35 nous montre la composition de la class SpatialPoints.
+Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.35 nous montre la composition de la class `SpatialPoints`.
 
 ![](media/asdar_p35.png)
 
-***
-
-La classe S4 `SpatialPoints` hérite de la classe `Spatial` et l'étend
-
-```{r Classe SpatialPoints}
-showClass("SpatialPoints")
-```
-
-***
+---
 
 La classe S4 `Spatial` est la plus générique. Elle a 2 "slots" : bbox (matrix) et proj4string (CRS)
 
-```{r Classe Spatial}
+La classe S4 `SpatialPoints` hérite de la classe `Spatial` et l'étend
+
+```{r Classe SpatialPoints, eval=FALSE, include=FALSE}
+showClass("SpatialPoints")
 showClass("Spatial")
 ```
+
 
 ## 2.7. SpatialLines et SpatialPolygons 
 
 ### Créer des objets SpatialLines et SpatialLinesDataFrame avec R.
-Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.40 nous montre la composition de la class SpatialPolygons et SpatialLines
+Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.40 nous montre la composition de la class `SpatialPolygons` et `SpatialLines`
 
 ![](media/asdar_p40.png)
 
-Un objet **SpatialLines** est composé d'une **liste de Lines**.
-Un objet **Lines** est une **liste of Line**.
-Un objet **Line** est une matrice **matrice de coordonnées** à 2 colonnes, qui représente un ensemble ordonné de points.
+Un objet **`SpatialLines`** est composé d'une **liste de `Lines`**.
+Un objet **`Lines`** est une **liste of `Line`**.
+Un objet **`Line`** est une matrice **matrice de coordonnées** à 2 colonnes, qui représente un ensemble ordonné de points.
 
 **Lines** = équivalent d'une *Polyligne* dans un Shapefile = *MULTILINESTRING* en notation WKT : <https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects>)
 
-## 2.8. Exemple : créer 2 polylignes formées de points aléatoires (ensembles de 7 et 5 points)
+## 2.8. Exemple : créer 2 polylignes (ensembles de 7 et 5 points)
 
 ```{r SpatialLines p1}
-# build 2 Lines object with ID slot = L1 and L2
-x1 <- runif(7, -0.005, 0.005) + 3.87
-y1 <- runif(7, -0.005, 0.005) + 43.65
-x2 <- runif(5, -0.005, 0.005) + 3.86
-y2 <- runif(5, -0.005, 0.005) + 43.61
+# cree 2 objets Lines avec ID slot = L1 and L2
+x1 <- c(3.871, 3.872, 3.873, 3.874, 3.875, 3.876, 3.877)
+y1 <- c(43.61, 43.62, 43.61, 43.62, 43.61, 43.62, 43.61)
+x2 <- c(3.911, 3.915, 3.916, 3.912, 3.913)
+y2 <- c(43.713, 43.712, 43.716, 43.715, 43.711)
 matcoords1 <- cbind(x1, y1)
 matcoords2 <- cbind(x2, y2)
 line_1 <- Line(matcoords1)
@@ -175,17 +174,17 @@ lines_1 <- Lines(list(line_1), "L1") # L1 est l'identifiant de la polyligne (obl
 lines_2 <- Lines(list(line_2), "L2") # L2 est l'identifiant
 ```
 
-## 2.11. Exemple (2/3) : SpatialLines
-```{r SpatialLines p2}
+## 2.9. Exemple (2/3) : SpatialLines 
+```{r SpatialLines p2, include=FALSE}
 sp_lines <- SpatialLines(list(lines_1, lines_2))
 str(sp_lines)
 ```
 
-## 2.12. Exemple (3/3) : SpatialLinesDataFrame
-Un objet **SpatialLines** résulte de la combinaison entre un **SpatialLines** et un **data.frame**.
-Utiliser le slot **ID** du SpatialLines et le nom des lignes (**row.names**) du data.frame pour les mettre en correspondance.
+## 2.10. Exemple (3/3) : SpatialLinesDataFrame
+Un objet **`SpatialLines`** résulte de la combinaison entre un **`SpatialLines`** et un **`data.frame`**.
+Utiliser le slot **`ID`** du `SpatialLines` et le nom des lignes (**`row.names`**) du `data.frame` pour les mettre en correspondance.
 ```{r SpatialLines p3}
-# créons la table attributaire (data.frame, 2 colonnes, et ID comme .
+# créons la table attributaire (data.frame, 2 colonnes)
 NAME=c("RANDOM1", "RANDOM2")
 LENGTH_M = SpatialLinesLengths(sp_lines, longlat=T) * 1000
 df_demo <- data.frame(NAME, LENGTH_M)
@@ -194,71 +193,156 @@ sp_lines_df <- SpatialLinesDataFrame(sp_lines, df_demo)
 sp_lines_df@data
 ```
 
-# TP. Lecture / écriture shapefile
 
-## Lire / écrire des shapefiles
+
+
+
+# 3. TP: Lecture / écriture shapefile
+
+## 3.1. Répertoire de travail
+
+```{r Data path}
+# changer le répertoire de destination
+path_data <- "D:/bacasable/formation/data"
+setwd(path_data)
+```
+
+## 3.2. Les données utilisées dans ce TP
+
+* Communes de Montpellier Métropole Méditerranée (Multipolygones)
+* Lignes de tramway (Multilignes)
+* Arrêts de tramway (Points)
+
+```{r DL DATA, eval=FALSE, include=FALSE}
+# changer le répertoire de destination
+URL1 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_Limites.zip"
+URL2 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_LigneTram.zip"
+URL3 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_ArretsTram.zip"
+URL4 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_VeloParc.csv"
+download.file(URL1,"MMM_MMM_Limites.zip")
+download.file(URL2,"MMM_MMM_LigneTram.zip")
+download.file(URL3,"MMM_MMM_ArretsTram.zip")
+download.file(URL4,"MMM_MMM_VeloParc.csv")
+unzip("MMM_MMM_Limites.zip")
+unzip("MMM_MMM_LigneTram.zip")
+unzip("MMM_MMM_ArretsTram.zip")
+```
+
+
+## 3.3. Lire / écrire des shapefiles
 2 packages sont utilisables
 
-* **rgdal** avec les les fonctions readOGR et writeOGR
-* **maptools** avec les fonctions readShapePoints, readShapeLines, readShapePoly, writeShapePoints, writeShapeLines, writeShapePoly 
+* **rgdal** avec les les fonctions `readOGR` et `writeOGR`
+* **maptools** avec les fonctions `readShapePoints`, `readShapeLines`, 
+`readShapePoly`, `writeShapePoints`, `writeShapeLines`, `writeShapePoly` 
 
 **rgdal** peut aussi lire les formats ESRI File GDB, PostGIS, MapInfo, GRASS ...
 
-### Paramètres de readOGR / writeOGR pour les shapefiles :
-- dsn = répertoire du .shp
-- layer = nom du .shp **sans l'extension**
-- driver (pour writeOGR) = "ESRI Shapefile"
-- p4s (optionnel) = définition système coordonnées 
-- overwrite_layer = FALSE / TRUE 
-- encoding
+---
+
+### 3.3.1. Paramètres de readOGR / writeOGR pour les shapefiles :
+- `dsn` = répertoire du .shp
+- `layer` = nom du .shp **sans l'extension**
+- `driver` (pour writeOGR) = "ESRI Shapefile"
+- `p4s` (optionnel) = définition système coordonnées 
+- `overwrite_layer` = FALSE / TRUE 
+- `encoding` ("latin1" or "UTF-8")
 
 Remarque : pour la lecture / écriture de données volumineuses, le package sf est nettement plus performant !
 
-## Lire un shapefile avec rgdal::readOGR
+## 3.4. Lire un shapefile avec rgdal::readOGR
 ```{r readOGR exemple}
 library(rgdal)
-setwd("D:/GitRepo/RSpatial/formation_2018")
-shp_communes  <- readOGR(dsn="data/Montpellier_OpenData/Communes",
+shp_communes  <- readOGR(dsn=path_data,
                          layer="MMM_MMM_Limites")
-#shp_communes
-shp_communes@data
-plot(shp_communes)
 ```
 
-## Ecrire un shapefile avec rgdal::writeOGR
+---
+
+```{r readOGR SpatialPolygons}
+# shp_communes : données attributaires et géométriques
+head(shp_communes@data)
+plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
+```
+
+
+## 3.5. Ecrire un shapefile avec rgdal::writeOGR
+
 L'objet à écrire doit être un Spatial*DataFrame
+
 ```{r writeOGR exemple}
-writeOGR(sp_lines_df, dsn="data/output", layer="test_lines", 
+writeOGR(sp_lines_df, dsn=path_data, layer="test_lines", 
          driver="ESRI Shapefile", 
          overwrite_layer=TRUE)
-writeOGR(sp_pts_df, dsn="data/output", layer="test_points", 
+writeOGR(sp_pts_df, dsn=path_data, layer="test_points", 
          driver="ESRI Shapefile", 
          overwrite_layer=TRUE)
 ```
 
-## Comment convertir des données spatiales d'un système de coordonnées vers un autre ?
-Transforming coordinates from a system to another require the `rgdal` package. `rgdal` provides drivers for an important number of raster and vector formats (see all the formats on the website of the GDAL library and its OGR sub-library). It also provides the **spTransform** function that makes possible to transform coordinates. 
-It is possible to apply the **spTransform** on any `Spatial*` or `Spatial*DataFrame` class. The system coordinates of the input object must have been defined with **proj4string** parameter. When calling **spTransform** we only have to specify output coordinate system.
+## 3.6. Comment convertir des données spatiales d'un système de coordonnées vers un autre ?
+
+Transformer les coordonnées d'un système vers un autre requiert `rgdal`. Le package `rgdal` ne fournit pas seulement les drivers nécessaires pour lire et écrire les formats de fichier raster et vecteur.
+
+**Le package `rgdal` est aussi nécessaire pour convertir les coordonnées de données spatiales d'un système vers un autre.** La fonction `rgdal::spTransform` s'applique sur tous les objets de classe `Spatial*` et `Spatial*DataFrame`.
+
+---
+
+### 3.6.1. La fonction `spTransform`
+
+Le système de coordonnées de l'objet **origine** doit bien sûr être défini (slot `proj4string`).
+
+Le système de coordonnées de l'objet **destination** est passé en paramètre de `spTransform`
 
 ```{r transform CRS WGS84 > L93}
-# check input CRS
+# input SpatialPointsDataFrame : check CRS
 proj4string(sp_pts_df)
-# transformation to RGF93 / Lambert93
+# transformation vers RGF93 / Lambert93
 sp_pts_df_l93 <- spTransform(sp_pts_df, CRS("+init=EPSG:2154"))
 sp_pts_df_l93@coords
 ```
 
+---
 
-# TP. Visualiser les données sur une carte
+### 3.6.2. La fonction `spTransform` : autre exemple
+
+Pour les SpatialLinesDataFrame aussi
+
+```{r transform CRS WGS84 > L93 SpatialLines}
+# transformation to RGF93 / Lambert93
+proj4string(sp_lines_df) # pas de SCR defini !!
+# definir SRC origine
+proj4string(sp_lines_df) <- CRS("+init=EPSG:4326")
+sp_lines_df_l93 <- spTransform(sp_lines_df, CRS("+init=EPSG:2154"))
+```
+
+
+# 4. TP: Visualiser les données sur une carte
 Pour en savoir plus : Bivand, ASDAR Book, chap. 3
 
-## plot
+## 4.1. plot
+
+Pourquoi ça marche pas ?
+
 ```{r plot(SpatialPoints)}
-plot(sp_lines_df, col="red")
+plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
+plot(sp_lines_df, col="red",add=TRUE)
 plot(sp_pts_df, col="blue",add=TRUE)
 ```
 
-## leaflet
+---
+
+### 4.1.1. plot (suite)
+
+Avec `plot`, les systèmes de coordonnées doivent être **homogènes**. 
+Ici tout est en Lambert 93 !
+
+```{r plot(SpatialPoints)}
+plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
+plot(sp_lines_df_l93, col="red",add=TRUE)
+plot(sp_pts_df_l93, col="blue",add=TRUE)
+```
+
+## 4.2. leaflet
 Avec le package `leaflet`, visualisez facilement vos données sur des cartes web interactives.
 Leaflet est utilisable avec **Shiny** et **RPubs**.
 ```{r leaflet exemple 1}
@@ -269,7 +353,9 @@ leaflet() %>%
   addMarkers(data=sp_pts_df, popup=name)
 ```
 
-## leaflet, exemple 2
+---
+
+### 4.2.1. leaflet, exemple 2
 ```{r leaflet exemple 2}
 leaflet() %>%
   addTiles() %>%
@@ -277,18 +363,29 @@ leaflet() %>%
   addCircleMarkers(data=sp_pts_df, color=coul)
 ```
 
-## tmap
+## 4.3. tmap
 ```{r tmap}
 library(tmap)
 tm_shape(sp_pts_df) +
-  tm_symbols(col=coul, text=name) 
+  tm_symbols(col="categ") 
 
 tm_shape(shp_communes) +
   tm_polygons() +
 tm_shape(sp_pts_df) +
-  tm_symbols(size=0.4, col=sp_pts_df$coul, shape=3) 
+  tm_symbols(size=0.4, col="categ", palette=c(A="blue",B="red"), shape=17) 
 ```
 
+https://www.r-graph-gallery.com/6-graph-parameters-reminder/
+http://www.r-graph-gallery.com/42-colors-names/
+
+## 4.4. étendue, barre d'échelle, flèche du nord dans tmap
+
+
+
+## 5. Exercice: lignes de tramways
+
+Avec tmap, afficher les 4 lignes de tramway avec une couleur particulière. 
+Afficher les communes de la métropole en fond de carte, mais zoomer sur l'étendue des 4 lignes.
 
 
 # COMMENT FAIRE POUR ...
