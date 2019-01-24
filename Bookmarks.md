@@ -5,7 +5,6 @@ Jan. 2019
 ## Essential
 
 ### general
-- https://www.r-spatial.org/
 - https://geocompr.robinlovelace.net/
 
 ### sf package
@@ -27,14 +26,21 @@ Jan. 2019
 
 ### tmap package
 - https://cran.r-project.org/web/packages/tmap/vignettes/tmap-getstarted.html
-- https://r-spatial.github.io/sf/
+- https://github.com/mtennekes/tmap
 
-
-## Tuto
-
+## Tuto, courses
+- http://edrub.in/ARE212/section12.html
+- https://help.nceas.ucsb.edu/R:_Spatial (broken !)
+- http://neondataskills.org/R/Raster-Data-In-R/
+- https://www.neonscience.org/resources/data-tutorials
+- https://www.r-spatial.org/
 - https://sites.google.com/site/seascapemodelling/home/r-code/r-spatial
 - https://statnmap.com/fr/2018-07-14-initiation-a-la-cartographie-avec-sf-et-compagnie/
 - https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
+
+## Spatial analyses, geostats
+- http://amsantac.co/blog/en/2015/11/28/classification-r.html
+- https://www.insee.fr/fr/information/3635442
 
 ## Others
 
@@ -47,21 +53,18 @@ Jan. 2019
 - https://github.com/juldebar/R_Metadata
 - https://github.com/eblondel/geometa
 
-### geostats
-- https://www.insee.fr/fr/information/3635442
 
 ### cartography, leaflet, ggmap
 - http://wukan.ums-riate.fr/RUSS/RUSS_2015/RUSS_2015.html
 - https://blog.rstudio.org/2015/06/24/leaflet-interactive-web-maps-with-r/
 - http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html#ggmap-hooray
+- https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-## MISC
-- http://amsantac.co/blog/en/2015/11/28/classification-r.html
+### MISC
 - https://cengel.github.io/rspatial/4_Mapping.nb.html
 - https://cengel.github.io/rspatial/
 - https://www.datamentor.io/r-programming/examples
 - http://www.digital-geography.com/overview-r-cheat-sheets/
-- http://edrub.in/ARE212/section12.html
 - https://edzer.github.io/sp/
 - https://edzer.github.io/UseR2017/
 - http://egallic.fr/R/intro_carto/slides_intro_carto.html#1
@@ -71,16 +74,11 @@ Jan. 2019
 - https://grasswiki.osgeo.org/wiki/R_statistics/rgrass7
 - http://www.maths.lancs.ac.uk/~rowlings/Teaching/Sheffield2013/cheatsheet.html
 - https://mgimond.github.io/Spatial/raster-operations-in-r.html
-- https://help.nceas.ucsb.edu/R:_Spatial
-- http://neondataskills.org/R/Raster-Data-In-R/
-- https://www.neonscience.org/resources/data-tutorials
 - https://nowosad.github.io/
 - https://obrl-soil.github.io/r-osgeo4w-windows/
-- http://pakillo.github.io/R-GIS-tutorial/
+- http://pakillo.github.io/R-GIS-tutorial/ (2013)
 - https://github.com/Pakillo/R-GIS-tutorial/blob/master/R-GIS_tutorial.md
 - http://www.petrkeil.com/?p=648
-- https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
-- http://www.rspatial.org/index.html
 - https://statnmap.com/2018-04-18-draw-maps-like-paintings/
 - http://projects.susielu.com/viz-palette
 - https://github.com/tylermorganwall/rayshader

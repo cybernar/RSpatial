@@ -180,8 +180,9 @@ lines_2 <- Lines(list(line_2), "L2") # L2 est l'identifiant
 ```
 
 ## 2.9. Exemple (2/3) : SpatialLines 
-```{r SpatialLines p2, include=FALSE}
+```{r SpatialLines p2}
 sp_lines <- SpatialLines(list(lines_1, lines_2))
+plot(sp_lines, axes=T)
 str(sp_lines)
 ```
 
@@ -251,7 +252,7 @@ dir.create(path_data)
 * Lignes de tramway (Multilignes)
 * Arrêts de tramway (Points)
 
-```{r DL DATA, eval=FALSE, include=FALSE}
+```{r DL DATA}
 # changer le répertoire de destination
 URL1 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_Limites.zip"
 URL2 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_LigneTram.zip"
@@ -292,6 +293,11 @@ Remarque : pour la lecture / écriture de données volumineuses, le package sf e
 library(rgdal)
 shp_communes  <- readOGR(dsn=path_data,
                          layer="MMM_MMM_Limites")
+shp_tramlignes <- readOGR(dsn=path_data,
+                          layer="MMM_MMM_LigneTram")
+shp_tramarrets <- readOGR(dsn=path_data,
+                          layer="MMM_MMM_ArretsTram", 
+                          encoding = "UTF-8")
 ```
 
 ---
@@ -373,7 +379,7 @@ plot(sp_pts_df, col="blue",add=TRUE)
 Avec `plot`, les systèmes de coordonnées doivent être **homogènes**. 
 Ici tout est en Lambert 93 !
 
-```{r plot(SpatialPoints)}
+```{r plot(SpatialPoints) L93}
 plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
 plot(sp_lines_df_l93, col="red",add=TRUE)
 plot(sp_pts_df_l93, col="blue",add=TRUE)
@@ -390,6 +396,9 @@ leaflet() %>%
   addTiles() %>%
   addMarkers(data=sp_pts_df, popup=name)
 ```
+
+RMarkdown users ! installer webshot et phantomJS pour imprimer les cartes leaflet en PDF
+https://bookdown.org/yihui/bookdown/html-widgets.html
 
 ---
 
@@ -410,13 +419,36 @@ tm_shape(sp_pts_df) +
 tm_shape(shp_communes) +
   tm_polygons() +
 tm_shape(sp_pts_df) +
-  tm_symbols(size=0.4, col="categ", palette=c(A="blue",B="red"), shape=17) 
+  tm_symbols(size=0.4, 
+             col="categ", palette=c(A="blue",B="red"),
+             shape=17) 
 ```
 
 https://www.r-graph-gallery.com/6-graph-parameters-reminder/
 http://www.r-graph-gallery.com/42-colors-names/
 
-## 4.4. étendue, barre d'échelle, flèche du nord dans tmap
+## 4.4. étendue, barre d'échelle, flèche du nord, labels dans tmap
+
+```{r tmap enhanced}
+tm_shape(shp_communes) +
+  tm_polygons(col="beige") +
+tm_shape(sp_pts_df) +
+  tm_symbols(size=0.4, 
+             col="categ", palette=c(A="blue",B="red"), title.col="Types de gare",
+             shape=17) +
+  tm_text("fid", 
+          fontface="bold", ymod=1) + 
+tm_style(style="white") +
+tm_layout(main.title="Gares routières et SNCF dans la métropole de Montpellier",
+          main.title.position = c("center","top"), main.title.size = 1,
+          legend.title.size = 1, legend.title.fontface = "bold",
+          inner.margins = c(0.1, 0.1, 0.1, 0.1)) +
+tm_compass(type = "arrow", size=1.5, fontsize=0.6, position = c("right","top")) +
+tm_scale_bar(size=0.5, breaks=c(0,5,10)) +
+tm_credits("Données : Montpellier 3M, SNCF", position=c("left","bottom"))
+
+```
+
 
 
 
@@ -424,6 +456,18 @@ http://www.r-graph-gallery.com/42-colors-names/
 
 Avec tmap, afficher les 4 lignes de tramway avec une couleur particulière. 
 Afficher les communes de la métropole en fond de carte, mais zoomer sur l'étendue des 4 lignes.
+
+```{r tmap tram}
+tm_shape(shp_communes, bbox = shp_tramlignes@bbox) +
+  tm_polygons() +
+tm_shape(shp_tramlignes) +
+  tm_lines() +
+tm_shape(shp_tramarrets) +
+  tm_symbols(size=0.2) +
+tm_layout(main.title="Lignes de tramway dans la métropole de Montpellier", 
+          main.title.position = c("center","top"), main.title.size = 1.)
+```
+
 
 
 # 6. COMMENT FAIRE POUR ...
@@ -463,19 +507,48 @@ names(v) <- c("PAR-MAD","MAD-BAI", "BAI-NYC")
 v
 ```
 
+## 6.3. Un subset des données spatiales
+Pour filtrer les données d'un objet Spatial*DataFrame d'après les valeurs d'une colonne, 
+nous procédons de la même manière d'avec un data.frame.
+
+Exemple : filtrez les points de la ligne 4 dans un nouveau SpatialPointsDataFrame
+
 ## 6.3. Comment sélectionner les points qui intersectent un polygone ?
 
+Exemple: sélectionnez les arrêts de tramway situés sur la commune de Castelnau-Le-Lez
+
+## Exercice
+
+Sélectionnez les arrêts de tramway en dehors de la commune de Montpellier
+
+Combien y-a-il d'arrêt de tramway dans chaque commune ?
 
 ## 6.4. Comment enregistrer vos données en KML pour les visualiser dans Google Earth ?
 
+Créer un fichier KML avec les arrêts de tramways :
+- marqueurs bleu pour la ligne 1
+- marqueurs orange pour la ligne 2
+- marqueurs vert pour la ligne 3
+- marqueurs jaune pour la ligne 4
 
-## 6.5. Comment visualiser vos données sur un fond de carte OpenStreetMap avec Leaflet ?
+# Conclusion de la séance 1
 
+## Ce que nous avons vu aujourd'hui 
 
-## Divers - Exercice
-jointures
-restaurant bar : densité de bars X grille
-arret de tramway situé à castelnau le lez
-arbres remarquables X parcs et jardin
-iris : choroplethe
-transformation WGS84 > L93
+- les structures de données spatiales introduites dans sp :
+SpatialPoints, SpatialLines, SpatialPolygons, 
+SpatialPointsDataFrame, SpatialLinesDataFrame, SpatialPolygonsDataFrame
+- comment lire et écrire des fichiers SIG vectoriel avec rgdal
+- gérer le système de coordonnées des données
+- présenter les données sur une carte simple
+
+## Ce que nous n'avons pas abordé aujourd'hui
+
+### ... mais que nous verrons avec le package sf
+- calcul de surface
+- jointures attributaires et spatiales
+- zones tampons
+- intersecter des données vectorielles (lignes et polygones, polygones et polygones)
+- requêtes spatiales complexes
+- cartes choroplèthes
+
