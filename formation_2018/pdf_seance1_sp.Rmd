@@ -579,11 +579,26 @@ shp_tramarrets$nom[indices_perols]
 
 ## 6.4. Comment enregistrer vos données en KML pour les visualiser dans Google Earth ?
 
-Créer un fichier KML avec les arrêts de tramways :
-- marqueurs bleu pour la ligne 1
-- marqueurs orange pour la ligne 2
-- marqueurs vert pour la ligne 3
-- marqueurs jaune pour la ligne 4
+Enregistrer des points sous forme de fichier KML est un autre moyen intéressant pour
+visualiser des données. 
+
+Le moyen le plus direct est d'utiliser la fonction ```maptools::kmlPoints```.
+Cette fonction permet d'associer à chaque point un nom et l'URL d'une icone. Il est
+possible d'associer des icones de différentes couleurs suivant une variable qualitative.
+
+Exemple : créez un fichier KML avec les gares routières et SNCF (objet sp_pts_df, cf. 2.5). 
+Nous nous baserons sur la colonne _coul_ pour les couleurs (red = SNCF, orange = Hérault Transport)
+
+URL des icones : https://sites.google.com/site/gmapsdevelopment/
+
+
+```{r kmlgen}
+library(maptools)
+# url for red & orange markers
+url_color_markers <- paste0("http://maps.google.com/mapfiles/ms/micons/",sp_pts_df$coul,".png")
+kmlPoints(sp_pts_df,kmlfile="data/exemple_formation.kml",name=sp_pts_df$name, icon=url_color_markers)
+```
+
 
 # 7. Révision
 
@@ -595,7 +610,7 @@ Nous utiliserons une fonction qui, à partir d'un point de départ, réalise une
 avec des pas de 10 m dans une direction aléatoire. 
 
 - Vous partirez d'un point P1 dont les coordonnées, en Lambert 93, sont : *X=766350, Y=6313470*.
-- A partir de ce point de départ, réalisez 5 marches aléatoires de 100 pas de 10 m.
+- A partir de ce point de départ, réalisez 5 marches aléatoires de 100 pas de 50 m.
 Nous appellerons ces 5 marches : *RW1, RW2, RW3, RW4, RW5*.
 - Pour la marche *RW1*, mesurez la distance entre le point de départ et les points suivants. 
 Vous utiliserez pour cela la fonction ```sp::spDistsN1```.
@@ -612,7 +627,7 @@ Chaque entité aura pour attribut : un identifiant unique et la longueur renvoy�
 
 ```{r randow walk exercise}
 # random walk function
-f_point_in_circle <- function(x_from, y_from, step_dist=10, step_number=100) {
+f_point_in_circle <- function(x_from, y_from, step_dist=50, step_number=100) {
   angle <- runif(step_number + 1, 0, 360)
   x_diff <- step_dist * cos(angle)
   y_diff <- step_dist * sin(angle)
@@ -640,8 +655,21 @@ for (rw_name in rw_names) {
   rw_lines <- Lines(list(rw_line), rw_name)
   list_rw_lines[[rw_name]] <- rw_lines
 }
-sp_rw <- SpatialLines(list_rw_lines, proj4string = CRS("+init=EPSG:4326"))
+sp_l <- SpatialLines(list_rw_lines, proj4string = CRS("+init=EPSG:2154"))
+df_attr <- data.frame(rw_names, long_m = SpatialLinesLengths(sp_l, longlat=F))
+sp_rw <- SpatialLinesDataFrame(sp_l, df_attr)
 
+# transformation Lambert 93 -> WGS 84
+sp_rw_wgs84 <- spTransform(sp_rw, CRS("+init=EPSG:4326"))
+
+# carto leaflet avec une couleur differente pour chaque ligne
+leaflet(data=sp_rw_wgs84) %>%
+  addTiles() %>%
+  addPolylines(color = c("cyan", "deeppink" ,"brown", "darkorange", "chartreuse"))
+
+# export KML
+kmlLines(sp_rw_wgs84, kmlfile = "data/test_random_walk.kml", 
+         col="deeppink", kmlname = "Formation RSpatial")
 ```
 
 
