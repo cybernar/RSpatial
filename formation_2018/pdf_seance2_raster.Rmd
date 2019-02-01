@@ -46,6 +46,11 @@ Les données utilisées dans le TP sont en libre accès sur Internet. Elles sont
 * Lovelace R. Introduction to visualising spatial data in R (https://github.com/Robinlovelace/Creating-maps-in-R, https://cran.r-project.org/doc/contrib/intro-spatial-rl.pdf) 
 * Racine E. The Visual Raster Cheat Sheet (https://rpubs.com/etiennebr/visualraster) 
 
+```{r test}
+library(raster)
+#rast_sentinel2xxx <- brick("data/S2_Marquenterre.tif")
+
+```
 
 
 
@@ -135,7 +140,7 @@ Voir aussi `cut` et `reclassify`
 
 ```{r DL data, eval=FALSE}
 URL1 <- "http://biogeo.ucdavis.edu/data/worldclim/v2.0/tif/base/wc2.0_10m_prec.zip"
-URL2 <- "https://mycore.core-cloud.net/index.php/s/QorZfimjNn1UUFN/download"
+URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/01/S2_Marquenterre_20180504.tif"
 download.file(URL1, "data/wc2.0_10m_prec.zip")
 download.file(URL2, "data/S2_Marquenterre_20180504.tif")
 #download.file(URL4, "data/MMM_MMM_VeloParc.csv")
@@ -231,7 +236,9 @@ showClass("Raster")
 ## La classe RasterBrick
 Une "RasterBrick" est un raster multi-couches issu d'1 fichier multi-couches.
 ```{r Lire une image satellite}
-rast_sentinel2 <- brick("data/S2_Marquenterre_20180504.tif")
+#rast_sentinel2 <- brick("data/S2_Marquenterre_20180504.tif")
+# probleme pour knitter ? utiliser le chemin complet 
+rast_sentinel2 <- brick("D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif")
 rast_sentinel2
 nlayers(rast_sentinel2)
 ```
@@ -273,7 +280,8 @@ names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MA
 
 ## RasterStack + plot = ?
 ```{r plot précipitations}
-plot(rast_precip)
+# ligne suivante : problème avec RMarkdown
+#plot(rast_precip)
 ```
 
 ## Extraire une couche raster simple (RasterLayer) à partir d'un raster multi-couche (RasterBrick ou RasterStack)
@@ -293,7 +301,7 @@ Formule de l'indice NDVI  : ```ndvi = (pir - r) / (pir + r)```
 ## Exemple : extraire des couches et calculer le NDVI 
 ```{r Calculer le NDVI}
 rast_ndvi <- (rast_nir - rast_red) / (rast_nir + rast_red)
-writeRaster(rast_ndvi, "NDVI_S2A_20180504_T31UCR.tif", overwrite=T)
+writeRaster(rast_ndvi, "data/NDVI_S2A_20180504_T31UCR.tif", overwrite=T)
 plot(rast_ndvi)
 ```
 
@@ -576,13 +584,12 @@ Appliquer ce masque sur le raster NDVI.
 rast_mask <- rast_clc80_niv2
 rast_bool <- rast_clc80_niv2 %in% c(42,52)
 rast_mask[rast_bool] <- NA
-rast_ndvi <- raster("NDVI_S2A_20180504_T31UCR.tif")
+rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
 plot(mask(rast_ndvi, rast_mask),col=pal_YlGr,breaks=lim)
 
 ```
 
 
-
-
 ## Exercice 4 : afficher la distribution du NDVI pour les zones de cultures
+
 blabla
