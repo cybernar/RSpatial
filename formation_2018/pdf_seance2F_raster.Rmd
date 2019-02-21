@@ -1,0 +1,131 @@
+---
+title: "Le package raster"
+author: "Cyril Bernard (CEFE-CNRS)"
+date: "31 janvier 2019"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# TP6. Masques. Statistiques zonales. Statistiques focales.
+
+## Utilisation des masques
+Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés. 
+
+Le masque peut être défini de 2 manières :
+
+- à partir d'un objet SpatialPolygons (issu d'1 shapefile)
+- à partir d'un raster dont les pixels à ignorer portent le valeur NA
+
+La fonction `mask` permet d'appliquer un masque à d'autre raster.
+
+## Exercice 
+
+**Exercice** : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
+Appliquer ce masque sur le raster NDVI.
+
+```{r Exercice 5: masques}
+# chargement des donnees
+library(raster)
+rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
+rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
+# masque
+rast_mask <- rast_clc80_niv2
+rast_bool <- rast_clc80_niv2 %in% c(42,52)
+rast_mask[rast_bool] <- NA
+rast_ndvi_mask <- mask(rast_ndvi, rast_mask)
+library(RColorBrewer)
+pal_YlGr <- brewer.pal(5,"YlGn")
+lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
+plot(rast_ndvi_mask,col=pal_YlGr,breaks=lim)
+```
+
+
+## Exercice masque
+
+**Exercice** : afficher la distribution du NDVI pour les zones de cultures
+
+```{r mask et distribution des valeurs avec ggplot2, eval=FALSE}
+library(ggplot2)
+ggplot(data=data.frame(NDVI=rast_ndvi_mask[])) +
+  geom_histogram(mapping=aes(x=NDVI), binwidth=0.01)
+```
+
+## Stats zonales
+
+La fonction zonal agrége les données issues d'un raster x, d'après les zones 
+définies dans un raster z.
+
+**Exemple** : ```x``` contient des valeurs de ndvi (variables quantitatives), 
+et ```z``` contient des codes d'occupation du sol. Pour chaque type d'occupation du sol,
+on voudrait connaître le NDVI moyen (```mean```) et la dispersion (```sd```).
+
+```{r calcul NDVI moyen par code CLC}
+ndvi_by_clc_mean <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="mean")
+```
+
+## Exercice zonal
+
+**Exercice** : pour chaque type d'occupation du sol, calculer la dispersion de la
+valeur de NDVI (utiliser zonal avec la fonction sd```sd```) et la surface totale 
+du type d'occupation du sol en ha (utiliser freq).
+
+```{r calcul NDVI moyen par code CLC}
+ndvi_by_clc_sd <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="sd")
+surf_by_clc <- freq(rast_clc80_niv2)
+df_stats_by_clc <- data.frame(CODE=ndvi_by_clc_mean[,1], 
+                              NDVI_MEAN=ndvi_by_clc_mean[,2], 
+                              NDVI_SD=ndvi_by_clc_sd[,2], 
+                              SURF_HA=surf_by_clc[,2] * 0.01)
+
+```
+
+## Stats zonales avec extract
+
+La fonction Extract 
+
+```{r}
+pp <- c("sol nu 1", "sol nu 2", "conifere 1", "conifere 2", "maraich 1")
+px <- c(400560, 401740, 397320, 398330, 401460)
+py <- c(5572420, 5570420, 5570260, 5571820, 5567670)
+# extraire le NDVI à la position des points
+ndvi_pts <- extract(x=rast_ndvi, y=cbind(px, py))
+# extraire le NDVI moyen dans un rayon de 100 m autour des points
+ndvi_pts_100 <- extract(x=rast_ndvi, y=cbind(px, py), buffer=100, fun=mean, na.rm=T)
+```
+
+### Extraction de valeurs avec des polygones vectoriels
+
+```{r}
+# extraire le NDVI moyen par code CLC, à partir du fichier vectoriel CLC
+library(rgdal)
+shp_clc_utm <- readOGR(dsn="data/CLC", layer="CLC12_D080_UTM31N")
+ndvi_by_polygone <- extract(x=rast_ndvi, y=shp_clc_utm, fun=mean, na.rm=F)
+shp_clc_utm$ndvi_mean <- as.numeric(ndvi_by_polygone)
+polygones_with_ndvi <- as.logical(!is.na(ndvi_by_polygone))
+shp_clc_utm2 <- shp_clc_utm[polygones_with_ndvi,]
+plot(rast_ndvi,col=pal_YlGr,breaks=lim)
+plot(shp_clc_utm2, add=T, col=pal_YlGr[findInterval(shp_clc_utm2$ndvi_mean, lim)])
+```
+
+
+**Exercice** : que fait la fonction suivante ?
+
+```{r}
+test <- extract(x=rast_clc80_niv2, y=cbind(px, py), buffer=1000, fun=function(x) length(unique(x)))
+```
+
+
+
+https://www.somme-tourisme.com/les-crocs-autour-du-marquenterre/saint-quentin-en-tourmont/randopic0800000j
+https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx
+
+https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/
+http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20190101-shp.zip
+

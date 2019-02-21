@@ -1,0 +1,50 @@
+---
+title: "Le package raster"
+subtitle: "Intro"
+author: "Cyril Bernard (CEFE-CNRS)"
+date: "31 janvier 2019"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+# Le package raster : présentation
+
+## Le package raster
+
+Grâce au package **raster**, il est possible dans R de traiter des données au format raster (grille de données spatiales). Le package offre une palette d'outils assez comparable à celle aux logiciels SIG raster tels que GRASS, IDRISI, ESRI Spatial Analyst, SAGA, etc.
+
+* Calculatrice raster
+* Résumés statistiques (distribution, min et max, stats zonales)
+* Utilisation de masque
+* Fonctions de voisinage (focal)
+
+## Modèle de données
+Le package **raster** gère les raster à 1 couche (`RasterLayer`) ou à plusieurs couches (`RasterBrick` ou `RasterStack`).
+R et le package raster offre plus de souplesse et de possibilités qu'un SIG Bureautique lorsque le nombre de couches de données superposées est important.
+
+## Packages complémentaires : lecture / écriture de fichiers raster
+Le package **raster** gère par défaut les formats GeoTiff (.tif), ESRI Ascii (.asc), ENVI (.nvi), IDRISI (.rst), ESRI BIL (.bil). 
+D'autres formats sont disponibles via le package **rgdal**.
+
+## Les données utilisées dans les TP
+Les données utilisées dans le TP sont en libre accès sur Internet. Elles sont utilisables à condition de mentionner la source.
+
+* WorldClim 2. Précipitations mensuelles moyennes, résolution 10 minutes (http://worldclim.org/version2).
+* Extrait d'une image Sentinel2 corrigée avec effets atmosphériques (https://www.theia-land.fr/fr/produits/r%C3%A9flectance-sentinelle-2). Image du 04/05/2018, secteur de la baie de Somme (https://theia.cnes.fr/atdistrib/rocket/#/collections/SENTINEL2/9d3665f2-379b-54ac-9179-f0b008a01c37). 
+* Corine Land Cover 2012, département de la Somme (http://www.statistiques.developpement-durable.gouv.fr/clc/fichiers).
+
+## Liens utiles : documentation, cours, tutoriels
+* Hijmans R. Introduction to the ’raster’ package (https://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf).
+* Lovelace R., Nowosad J., Muenchen J. Geocomputation with R. (https://geocompr.robinlovelace.net/, https://bookdown.org/robinlovelace/geocompr/)
+* Lovelace R. Introduction to visualising spatial data in R (https://github.com/Robinlovelace/Creating-maps-in-R, https://cran.r-project.org/doc/contrib/intro-spatial-rl.pdf) 
+* Racine E. The Visual Raster Cheat Sheet (https://rpubs.com/etiennebr/visualraster) 
+
+
