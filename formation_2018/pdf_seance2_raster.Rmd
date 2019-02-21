@@ -389,7 +389,7 @@ Pour visualiser la distribution des pixels dans un raster avec ggplot, le plus d
 
 
 
-# TP3. Rastérisation de données vecteur.
+# TP4. Rastérisation de données vecteur.
 
 ## Rastériser un shapefile
 
@@ -497,7 +497,7 @@ Sys.time() - start_time
 
 
 
-# TP4. Visualisation des données raster
+# TP5. Visualisation des données raster
 
 ## Plus sur plot
 Des paramètres à connaître :
@@ -563,7 +563,8 @@ tm_shape(rast_clc80_niv2) +
 ```
 
 
-# Masques. Statistiques zonales. Statistiques focales.
+
+# TP6. Masques. Statistiques zonales. Statistiques focales.
 
 ## Utilisation des masques
 Un **masque** est une zone d'intérêt en dehors de laquelle les pixels sont ignorés. 
