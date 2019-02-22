@@ -113,23 +113,45 @@ slotNames(sp_pts)
 - `SpatialPixelsDataFrame` et `SpatialGridDataFrame` : pour des données spatiales matricielles ou raster accompagnées de leur(s) valeur(s)
 
 
-## 2.5. Créer un 'SpatialPointDataFrame' à partir d'un 'data.frame' muni de coordonnées
+## 2.5. Créer un SpatialPointDataFrame à partir d'un data.frame muni de coordonnées
 Utiliser la fonction coordinates pour créer l'objet, en désignant les 2 colonnes qui contiennent les coordonnées géographiques.
 ```{r Creer un SpatialPointsDataFrame}
 # copier le data.frame
 sp_pts_df <- df
 # transformer un data.frame en SpatialPointsDataFrame
 coordinates(sp_pts_df) <- c("lon","lat")
-sp_pts_df
 # ceci fonctionne aussi :
 sp_pts_df <- df
 coordinates(sp_pts_df) <- ~lon+lat
 # definir le CRS (optionnel)
 proj4string(sp_pts_df) <- CRS("+init=EPSG:4326")
-slotNames(sp_pts_df)
 ```
 
-## Exercice :
+--- 
+
+### 2.5.1. Exercice: étudiez la structure d'1 objet SpatialPointDataFrame
+Exécutez les lignes suivantes et répondez aux questions :
+- Quels sont les __slots__ (propriétés) de l'objet ```sp_pts_df``` ?
+- Quel slot 
+- Quel slot contient les coordonnées des points, et sous quelle forme ?
+
+```{r exercice 2.5.1, eval=FALSE}
+slotNames(sp_pts_df)
+str(sp_pts_df)
+```
+
+
+### 2.5.2. Exercice: .csv -> SpatialPointDataFrame
+Créer un objet SpatialPointDataFrame à partir du fichier
+SpatialPointDataFrame
+```{r exercice 2.5.2, eval=FALSE}
+URL <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_VeloParc.csv"
+download.file(URL, "data/MMM_MMM_VeloParc.csv")
+sp_exercice <- read.csv("data/MMM_MMM_VeloParc.csv", encoding = "UTF-8")
+coordinates(sp_exercice) <- ______________
+proj4string(sp_exercice) <- ______________
+```
+
 
 
 ## 2.6. Relation d'héritage entre les classes Spatial\*, SpatialPoints\* et SpatialPointsDataFrame
@@ -171,9 +193,9 @@ Un objet **`Line`** est une matrice **matrice de coordonnées** à 2 colonnes, q
 ```{r SpatialLines p1}
 # cree 2 objets Lines avec ID slot = L1 and L2
 x1 <- c(3.8, 3.8, 3.9, 3.9)
-y1 <- c(43.6, 43.5, 43.5, 43.6)
+y1 <- c(43.7, 43.6, 43.6, 43.7)
 x2 <- c(3.84, 3.84, 3.85, 3.85, 3.86)
-y2 <- c(43.75, 43.74, 43.74, 43.73, 43.73)
+y2 <- c(43.65, 43.64, 43.64, 43.63, 43.63)
 mat_1 <- cbind(x1, y1)
 mat_2 <- cbind(x2, y2)
 line_1 <- Line(mat_1)
@@ -199,47 +221,10 @@ LENGTH_M = SpatialLinesLengths(sp_lines, longlat=T) * 1000
 df_demo <- data.frame(NAME, LENGTH_M)
 row.names(df_demo) <- c("L1","L2")
 sp_lines_df <- SpatialLinesDataFrame(sp_lines, df_demo)
+proj4string(sp_lines_df) <- CRS("+init=EPSG:4326")
+# take a look at data
 sp_lines_df@data
 ```
-
-## 2.11. Exercice: SpatialPolygons (2 entités, 5 et 7 points)
-
-```{r SpatialPolygons p1, eval=FALSE}
-# cree 2 objets Polygons avec ID slot = L1 and L2
-x1 <- c(3.8, 3.8, 3.9, 3.9, 3.8)
-y1 <- c(43.6, 43.5, 43.5, 43.6, 43.6)
-x2 <- c(3.84, 3.84, 3.85, 3.85, 3.86, 3.86, 3.84)
-y2 <- c(43.75, 43.74, 43.74, 43.73, 43.73, 43.75, 43.75)
-mat_1 <- cbind(x1, y1)
-mat_2 <- cbind(x2, y2)
-poly_1 <- Polygon(mat_1)
-poly_2 <- Polygon(mat_2)
-polys_1 <- Polygons(list(poly_1), "P1") # P1 est l'identifiant de la polyligne (obligatoire)
-polys_2 <- Polygons(list(poly_2), "P2") # P2 est l'identifiant
-```
-
-## 2.12. Exemple (2/3) : SpatialPolygons 
-
-```{r SpatialPolygons p2, eval=FALSE}
-sp_polys <- SpatialPolygons(list(polys_1, polys_2))
-plot(sp_polys, axes=T)
-str(sp_polys)
-```
-
-Un objet **`SpatialLines`** résulte de la combinaison entre un **`SpatialLines`** et un **`data.frame`**.
-Utiliser le slot **`ID`** du `SpatialLines` et le nom des lignes (**`row.names`**) du `data.frame` pour les mettre en correspondance.
-
-## 2.13. Exemple (3/3) : SpatialPolygonsDataFrame
-
-```{r SpatialPolygons p3, eval=FALSE}
-# créons la table attributaire (data.frame, 2 colonnes)
-NAME=c("ZONE1", "ZONE2")
-df_poly <- data.frame(NAME)
-row.names(df_poly) <- c("P1","P2")
-sp_polys_df <- SpatialPolygonsDataFrame(sp_polys, df_poly)
-sp_polys_df@data
-```
-
 
 
 
@@ -268,27 +253,25 @@ dir.create(path_data)
 URL1 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_Limites.zip"
 URL2 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_LigneTram.zip"
 URL3 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_ArretsTram.zip"
-#URL4 <- "http://data.montpellier3m.fr/sites/default/files/ressources/VilleMTP_MTP_ArbresAlign.zip"
-#URL5 <- "http://data.montpellier3m.fr/sites/default/files/ressources/OSM_Metropole_parc_et_jardin.json"
 download.file(URL1, "data/MMM_MMM_Limites.zip")
 download.file(URL2, "data/MMM_MMM_LigneTram.zip")
 download.file(URL3, "data/MMM_MMM_ArretsTram.zip")
-#download.file(URL4, "data/VilleMTP_MTP_ArbresAlign.zip")
-#download.file(URL5, "data/OSM_Metropole_parc_et_jardin.json")
 unzip("data/MMM_MMM_Limites.zip", exdir="data")
 unzip("data/MMM_MMM_LigneTram.zip", exdir="data")
 unzip("data/MMM_MMM_ArretsTram.zip", exdir="data")
-#unzip("data/VilleMTP_MTP_ArbresAlign.zip", exdir="data")
 ```
 
 ## 3.3. Lire / écrire des shapefiles
 2 packages sont utilisables
 
-* **rgdal** avec les les fonctions `readOGR` et `writeOGR`
+* **rgdal** avec les fonctions `readOGR` et `writeOGR`
 * **maptools** avec les fonctions `readShapePoints`, `readShapeLines`, 
-`readShapePoly`, `writeShapePoints`, `writeShapeLines`, `writeShapePoly` 
+`readShapePoly`, `writeShapePoints`, `writeShapeLines`, `writeShapePoly` (obsolètes)
 
 **rgdal** peut aussi lire les formats ESRI File GDB, PostGIS, MapInfo, GRASS ...
+
+Remarque : le package **sf** est beaucoup plus performant, avec les fonctions 
+`st_read` et `st_write`
 
 ---
 
@@ -322,19 +305,37 @@ head(shp_communes@data)
 plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
 ```
 
+---
+
+### 3.4.1. Exercices
+
+Téléchargez le shapefile "Contour des départements français" dans le répertoire data
+Remarque : pour connaître l'encodage des données, vous pouvez procéder par essai/erreur,
+ou ouvrir le fichier .cpg
+
+```{r exercice 341, eval=FALSE}
+URL <- "https://www.data.gouv.fr/fr/datasets/r/3096e551-c68d-40ce-8972-a228c94c0ad1"
+download.file(URL, "data/departements-20140306-100m-shp.zip")
+unzip("data/departements-20140306-100m-shp.zip", exdir="data")
+shp_departements <- readOGR(dsn=__________,
+                            layer=__________, 
+                            encoding=__________)
+names(shp_departements)
+
+```
+
 
 ## 3.5. Ecrire un shapefile avec rgdal::writeOGR
 
-L'objet à écrire doit être un Spatial*DataFrame
+L'objet à écrire doit être un Spatial*DataFrame. 
 
 ```{r writeOGR exemple}
-writeOGR(sp_lines_df, dsn=path_data, layer="test_lines", 
-         driver="ESRI Shapefile", 
-         overwrite_layer=TRUE)
 writeOGR(sp_pts_df, dsn=path_data, layer="test_points", 
          driver="ESRI Shapefile", 
          overwrite_layer=TRUE)
 ```
+
+
 
 ## 3.6. Comment convertir des données spatiales d'un système de coordonnées vers un autre ?
 
@@ -358,19 +359,35 @@ sp_pts_df_l93 <- spTransform(sp_pts_df, CRS("+init=EPSG:2154"))
 sp_pts_df_l93@coords
 ```
 
+--- 
+
+### 3.6.2. Exercice : colonnes X et Y à partir d'un `SpatialPointsDataFrame`
+
+Nous venons de convertir les points en Lambert 93 dans *sp_pts_df_l93*. Complétez
+le code ci-dessous pour ajouter au jeu de données 2 nouvelles colonnes *x_l93* et
+*y_l93* avec les coordonnées des points en Lambert 93.
+
+```{r exercice 362, eval=FALSE}
+matrix_coords <- _________
+sp_pts_df_l93$x_l93 <- _________
+sp_pts_df_l93$y_l93 <- _________
+```
+
 ---
 
-### 3.6.2. La fonction `spTransform` : autre exemple
+### 3.6.3. Exercice avec `spTransform` et `writeOGR`
 
-Pour les SpatialLinesDataFrame aussi
+Dans cet exercice, vous convertirez l'objet *sp_lines_df* (`SpatialLinesDataFrame`)
+en Lambert 93 dans un nouvel objet *sp_lines_df_l93*. 
+Puis vous enregistrerez le résultat dans un nouveau fichier shapefile *test_lines_l93.shp*.
 
-```{r transform CRS WGS84 > L93 SpatialLines}
-# transformation to RGF93 / Lambert93
-proj4string(sp_lines_df) # pas de SCR defini !!
-# definir SRC origine
-proj4string(sp_lines_df) <- CRS("+init=EPSG:4326")
-sp_lines_df_l93 <- spTransform(sp_lines_df, CRS("+init=EPSG:2154"))
+```{r transform CRS WGS84 > L93 SpatialLines, eval=FALSE}
+# transformation en RGF93 / Lambert93
+sp_lines_df_l93 <- spTransform(sp_lines_df, CRS(__________)
+writeOGR(__________, dsn=__________, layer=__________, 
+         driver=__________, overwrite_layer=TRUE)
 ```
+
 
 
 # 4. TP: Visualiser les données sur une carte
@@ -395,7 +412,7 @@ Ici tout est en Lambert 93 !
 
 ```{r plot(SpatialPoints) L93}
 plot(shp_communes, axes=T, main="Montpellier Méditerranée Métropole", col="beige")
-plot(sp_lines_df_l93, col="red",add=TRUE)
+#plot(sp_lines_df_l93, col="red",add=TRUE)
 plot(sp_pts_df_l93, col="blue",add=TRUE)
 ```
 
@@ -434,7 +451,7 @@ tm_shape(shp_communes) +
   tm_polygons() +
 tm_shape(sp_pts_df) +
   tm_symbols(size=0.4, 
-             col="categ", palette=c(A="blue",B="red"),
+             col="categ", palette=c("orange", "red"),
              shape=17) 
 ```
 
@@ -448,7 +465,7 @@ tm_shape(shp_communes) +
   tm_polygons(col="beige") +
 tm_shape(sp_pts_df) +
   tm_symbols(size=0.4, 
-             col="categ", palette=c(A="blue",B="red"), title.col="Types de gare",
+             col="categ", palette=c("orange", "red"), title.col="Types de gare",
              shape=17) +
   tm_text("fid", 
           fontface="bold", ymod=1) + 
@@ -458,7 +475,7 @@ tm_layout(main.title="Gares routières et SNCF dans la métropole de Montpellier
           legend.title.size = 1, legend.title.fontface = "bold",
           inner.margins = c(0.1, 0.1, 0.1, 0.1)) +
 tm_compass(type = "arrow", size=1.5, fontsize=0.6, position = c("right","top")) +
-tm_scale_bar(size=0.5, breaks=c(0,5,10)) +
+tm_scale_bar(size=0.4, breaks=c(0,5,10)) +
 tm_credits("Données : Montpellier 3M, SNCF", position=c("left","bottom"))
 
 ```
@@ -468,14 +485,27 @@ tm_credits("Données : Montpellier 3M, SNCF", position=c("left","bottom"))
 
 ## 5. Exercice: lignes de tramways
 
-Avec tmap, afficher les 4 lignes de tramway avec une couleur particulière. 
-Afficher les communes de la métropole en fond de carte, mais zoomer sur l'étendue des 4 lignes.
+Dans cet exercice, vous allez partir du code ci-dessous avec tmap, pour 
+l'améliorer progressivement.
+
+1) Laisser les communes de la métropole en fond de carte, mais zoomer sur l'étendue des 4 lignes.
+2) Avec tmap, afficher chacune des 4 lignes de tramway avec une couleur particulière.
 
 ```{r tmap tram}
-tm_shape(shp_communes, bbox = shp_tramlignes@bbox) +
+# enonce
+tm_shape(shp_communes) +
   tm_polygons() +
 tm_shape(shp_tramlignes) +
   tm_lines() +
+tm_shape(shp_tramarrets) +
+  tm_symbols(size=0.2) +
+tm_layout(main.title="Lignes de tramway dans la métropole de Montpellier", 
+          main.title.position = c("center","top"), main.title.size = 1.)
+# solution
+tm_shape(shp_communes, bbox = shp_tramlignes@bbox) +
+  tm_polygons() +
+tm_shape(shp_tramlignes) +
+  tm_lines(col="num", palette=c("blue", "red", "green", "yellow")) +
 tm_shape(shp_tramarrets) +
   tm_symbols(size=0.2) +
 tm_layout(main.title="Lignes de tramway dans la métropole de Montpellier", 
