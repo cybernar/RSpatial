@@ -1,7 +1,7 @@
 ---
 title: "Le package sp"
 author: "Cyril Bernard (CEFE-CNRS)"
-date: "22 janvier 2019"
+date: "22 février 2019"
 output: pdf_document
 ---
 
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. Présentation du package sp
 
-## 1.1. sp: Classes and Methods for Spatial Data
+## 1.1. sp: "Classes et Méthodes pour données spatiales"
 
 Le package sp propose des structures de données pour gérer des données spatiales dans R, un peu à la manière de ce que l'on trouve dans les SIG
 
@@ -129,6 +129,9 @@ proj4string(sp_pts_df) <- CRS("+init=EPSG:4326")
 slotNames(sp_pts_df)
 ```
 
+## Exercice :
+
+
 ## 2.6. Relation d'héritage entre les classes Spatial\*, SpatialPoints\* et SpatialPointsDataFrame
 
 Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.35 nous montre la composition de la class `SpatialPoints`.
@@ -152,7 +155,7 @@ showClass("Spatial")
 ### Créer des objets SpatialLines et SpatialLinesDataFrame avec R.
 Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.40 nous montre la composition de la class `SpatialPolygons` et `SpatialLines`
 
-![](media/asdar_p40.png)
+![](media/original/asdar_p40.png)
 
 Un objet **`SpatialLines`** est composé d'une **liste de `Lines`**.
 Un objet **`Lines`** est une **liste of `Line`**.
@@ -199,9 +202,9 @@ sp_lines_df <- SpatialLinesDataFrame(sp_lines, df_demo)
 sp_lines_df@data
 ```
 
-## 2.11. Autre exemple: SpatialPolygons (2 entités, 5 et 7 points)
+## 2.11. Exercice: SpatialPolygons (2 entités, 5 et 7 points)
 
-```{r SpatialPolygons p1}
+```{r SpatialPolygons p1, eval=FALSE}
 # cree 2 objets Polygons avec ID slot = L1 and L2
 x1 <- c(3.8, 3.8, 3.9, 3.9, 3.8)
 y1 <- c(43.6, 43.5, 43.5, 43.6, 43.6)
@@ -215,12 +218,20 @@ polys_1 <- Polygons(list(poly_1), "P1") # P1 est l'identifiant de la polyligne (
 polys_2 <- Polygons(list(poly_2), "P2") # P2 est l'identifiant
 ```
 
-```{r SpatialPolygons p2, include=FALSE}
+## 2.12. Exemple (2/3) : SpatialPolygons 
+
+```{r SpatialPolygons p2, eval=FALSE}
 sp_polys <- SpatialPolygons(list(polys_1, polys_2))
+plot(sp_polys, axes=T)
 str(sp_polys)
 ```
 
-```{r SpatialPolygons p3}
+Un objet **`SpatialLines`** résulte de la combinaison entre un **`SpatialLines`** et un **`data.frame`**.
+Utiliser le slot **`ID`** du `SpatialLines` et le nom des lignes (**`row.names`**) du `data.frame` pour les mettre en correspondance.
+
+## 2.13. Exemple (3/3) : SpatialPolygonsDataFrame
+
+```{r SpatialPolygons p3, eval=FALSE}
 # créons la table attributaire (data.frame, 2 colonnes)
 NAME=c("ZONE1", "ZONE2")
 df_poly <- data.frame(NAME)
@@ -257,18 +268,17 @@ dir.create(path_data)
 URL1 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_Limites.zip"
 URL2 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_LigneTram.zip"
 URL3 <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_ArretsTram.zip"
-URL4 <- "http://data.montpellier3m.fr/sites/default/files/ressources/VilleMTP_MTP_ArbresAlign.zip"
-URL5 <- "http://data.montpellier3m.fr/sites/default/files/ressources/OSM_Metropole_parc_et_jardin.json"
+#URL4 <- "http://data.montpellier3m.fr/sites/default/files/ressources/VilleMTP_MTP_ArbresAlign.zip"
+#URL5 <- "http://data.montpellier3m.fr/sites/default/files/ressources/OSM_Metropole_parc_et_jardin.json"
 download.file(URL1, "data/MMM_MMM_Limites.zip")
 download.file(URL2, "data/MMM_MMM_LigneTram.zip")
 download.file(URL3, "data/MMM_MMM_ArretsTram.zip")
-download.file(URL4, "data/VilleMTP_MTP_ArbresAlign.zip")
-download.file(URL5, "data/OSM_Metropole_parc_et_jardin.json")
-#download.file(URL4, "data/MMM_MMM_VeloParc.csv")
+#download.file(URL4, "data/VilleMTP_MTP_ArbresAlign.zip")
+#download.file(URL5, "data/OSM_Metropole_parc_et_jardin.json")
 unzip("data/MMM_MMM_Limites.zip", exdir="data")
 unzip("data/MMM_MMM_LigneTram.zip", exdir="data")
 unzip("data/MMM_MMM_ArretsTram.zip", exdir="data")
-unzip("data/VilleMTP_MTP_ArbresAlign.zip", exdir="data")
+#unzip("data/VilleMTP_MTP_ArbresAlign.zip", exdir="data")
 ```
 
 ## 3.3. Lire / écrire des shapefiles
@@ -625,7 +635,7 @@ Chaque entité aura pour attribut : un identifiant unique et la longueur renvoy�
 
 ### 7.1.1. A compléter
 
-```{r randow walk exercise}
+```{r randow walk exercise, eval=FALSE}
 # random walk function
 f_point_in_circle <- function(x_from, y_from, step_dist=50, step_number=100) {
   angle <- runif(step_number + 1, 0, 360)
