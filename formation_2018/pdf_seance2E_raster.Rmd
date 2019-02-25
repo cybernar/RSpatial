@@ -1,7 +1,8 @@
 ---
 title: "Le package raster"
-author: "Cyril Bernard (CEFE-CNRS)"
-date: "12 février 2019"
+author: "CEFE-CNRS"
+subtitle: "TP5: visualisation avec tmap"
+date: "février 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -15,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # TP5. Visualisation des données raster
 
-## Plus sur plot
+## 5.1. Plus sur plot
 Des paramètres à connaître :
 
 - col = palette de couleur
@@ -23,21 +24,21 @@ Des paramètres à connaître :
 - xlab, ylab = x-axis, y-axis label
 - breaks = bornes (exemple : 5 bornes pour 4 couleurs)
 
-## Plus sur plot : "plot de base"
+## 5.2. Plus sur plot : "plot de base"
 ```{r Améliorons plot (1/3)}
 library(raster)
 rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
 #plot(rast_ndvi)
 ```
 
-## Plus sur plot : "palette ColorBrewer"
+## 5.3. Plus sur plot : "palette ColorBrewer"
 ```{r Améliorons plot (2/3)}
 library(RColorBrewer)
 pal_YlGr <- brewer.pal(5,"YlGn")
 #plot(rast_ndvi,col=pal_YlGr)
 ```
 
-## Plus sur plot : "palette + bornes"
+## 5.4. Plus sur plot : "palette + bornes"
 ```{r Améliorons plot (3/3)}
 library(RColorBrewer)
 pal_YlGr <- brewer.pal(5,"YlGn")
@@ -45,15 +46,15 @@ lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
 #plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 ```
 
-## HOWTO : Corine L C avec couleurs standardisées ?
+## 5.5. HOWTO : Corine L C avec couleurs standardisées ?
 ```{r Plot de base CLC}
 rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
 #plot(rast_clc80_niv2)
 ```
 
 
-## HOWTO : tmap + raster + palette Hexa (début)
-```{r Lecture nomenclature CLC avec libellé et couleur 1}
+## 5.6. HOWTO : tmap + raster + palette Hexa
+```{r Lecture nomenclature CLC avec libellé et couleur 1, message=FALSE}
 # lire fichier nomenclature, feuille 2
 f_xls <- "data/CLC/CLC_nomenclature.xlsx"
 library(openxlsx)
@@ -69,15 +70,17 @@ df_nom <- transmute(df_nom,
                            maxColorValue = 255)
                  )
 df_nom <- filter(df_nom, CODE %in% unique(rast_clc80_niv2))
+# plot tmap
+#tm_shape(rast_clc80_niv2) +
+#  tm_raster(style="cat", palette=df_nom$PAL, labels=df_nom$LIB_FR, title="Corine Land Cover 2012")
+#tm_shape(rast_clc80_niv2) +
+#  tm_raster(style="cat", palette=df_nom$PAL, title="Corine Land Cover 2012")
+
 ```
 
-## HOWTO : tmap + raster + palette Hexa (suite et fin)
+## 5.7. HOWTO : tmap + raster + palette Hexa (suite et fin)
 ```{r Lecture nomenclature CLC avec libellé et couleur 2}
-# tm_shape(rast_clc80_niv2) +
-#   tm_raster(style="cat", palette=df_nom$PAL, labels=df_nom$LIB_FR, title="Corine Land Cover 2012")
-# tm_shape(rast_clc80_niv2) +
-#   tm_raster(style="cat", palette=df_nom$PAL, title="Corine Land Cover 2012")
-
+# bla
 ```
 
 

@@ -1,8 +1,8 @@
 ---
 title: "Le package raster"
-subtitle: "Création, lecture"
-author: "Cyril Bernard (CEFE-CNRS)"
-date: "19 février 2019"
+subtitle: "TP1 et TP2 : Raster from scratch, lecture de fichier"
+author: "CEFE-CNRS"
+date: "février 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # TP1 : Manipulations de base sur les rasters
 
-## Un raster "from scratch"
+## 1.1. Un raster "from scratch"
 Nous créons un raster de toutes pièces. Observons les lignes de codes qui suivent. Quelle est la classe de l'objet créé ? Quelles sont ses propriétés ?
 
 ```{r Créer un raster vide}
@@ -29,21 +29,21 @@ rast_zero <- raster(crs=r_crs, ext=r_ext, resolution=r_res, vals=r_val)
 rast_zero
 ```
 
-## Lire le système de coordonnées d'un raster et l'étendue
+## 1.2. Lire le système de coordonnées d'un raster et l'étendue
 Quels sont le système de coordonnées, l'étendue ?
 ```{r Informations sur le raster}
 crs(rast_zero) 
 extent(rast_zero)
 ```
 
-## Lire le nb de pixels et la résolution
+## 1.3. Lire le nombre de pixels et la résolution
 ```{r Informations sur le raster 2}
 nrow(rast_zero)
 ncol(rast_zero)
 res(rast_zero)
 ```
 
-## Lire et modifier les valeurs des pixels
+## 1.4. Lire et modifier les valeurs des pixels
 Récuperer les valeurs sous forme de vecteur est facile. L'inverse est possible pour modifier les valeurs des pixels.
 
 ```{r Lire les valeurs}
@@ -53,19 +53,19 @@ rast_rand[] <- runif(360*180, 0, 100)
 head(rast_rand[])
 ```
 
-## Visualiser un raster avec plot
+## 1.5. Visualiser un raster avec plot
 ```{r Visualisation}
 plot(rast_rand, main="Make some noise")
 ```
 
-## Extraire les valeurs d'un pixel
+## 1.6. Extraire les valeurs d'un pixel
 D'après les lignes qui suivent, le 1er pixel est-il situé en haut, ou en bas du raster ?
 ```{r Position du pixel 1}
 rast_rand[1] # valeur du pixel 1
 xyFromCell(rast_rand,1) # coordonnees geographiques du pixel 1
 ```
 
-## Techniques d'indexation : [i] ou [r,c]
+## 1.7. Techniques d'indexation : [i] ou [r,c]
 A quelle ligne / colonne correspond le pixel 361 ?
 ```{r Indexation des pixels}
 rowColFromCell(rast_rand,361) # ligne / colonne du pixel 361
@@ -73,11 +73,14 @@ rast_rand[361]
 rast_rand[2,1]
 ```
 
-## Techniques d'indexation pour modifier les valeurs
+## 1.8. Techniques d'indexation pour modifier les valeurs
 Je veux créer un nouveau raster dans lequel je reclasse les pixels en 2 catégories :
+
 - valeur < 50 : catégorie 1
 - valeur >= 50 : catégorie 2
+
 Un moyen simple est d'utiliser un raster Vrai/Faux comme index pour affecter les valeurs
+
 ```{r reclasser pixels}
 rast_cat <- rast_zero # cloner raster
 rast_cat[] <- 1 # ou bien : setValues(rast_categ, 1)
@@ -86,12 +89,13 @@ rast_cat[rast_boolean] <- 2
 # autre syntaxe plus concise
 rast_cat[rast_rand >= 50] <- 2 
 ```
+
 Voir aussi `cut` et `reclassify` 
 
 
 # TP2: Ouvrir et afficher des données raster
 
-## Téléchargement des données pour les TP
+## 2.1. Téléchargement des données pour les TP
 
 - Worldclim 
 - Sentinel2
@@ -108,19 +112,19 @@ unzip("data/wc2.0_10m_prec.zip", exdir="data/worldclim")
 
 
 
-## Lire un raster
+## 2.2. Lire un raster
 ```{r Lecture fichier GeoTIFF}
 library(raster)
 rast_prec01 <- raster("data/worldclim/wc2.0_10m_prec_01.tif")
 rast_prec01
 ```
 
-## Simple plot !
+## 2.3. Simple plot !
 ```{r Simple plot raster}
 plot(rast_prec01)
 ```
 
-## Plus sur plot : RColorBrewer
+## 2.4. Plus sur plot : RColorBrewer
 Voir http://colorbrewer2.org/
 ```{r Palette avec RColorBrewer}
 library(RColorBrewer)
@@ -130,8 +134,9 @@ plot(rast_prec01,
      main="Précipitations moyennes pour janvier")
 ```
 
-## Exercice 1 : extraire des valeurs
+## 2.5. Exercice 1 : extraire des valeurs
 Déterminer les précipitations du mois de janvier pour Montpellier (3.8°E,43.6°N) et Paris (2.3°E, 48.8°N)
+
 ```{r Exercice 1: définir 2 points}
 # on commence par créer une matrice avec x et y en colonnes
 villes_coords <- matrix(c(3.8, 2.3, 43.6, 48.8), ncol=2, dimnames=list(c("MTP","PAR"), c("long","lat")))
@@ -146,7 +151,7 @@ rast_prec01[villes_ncell]
 extract(___________, _____________)
 ```
 
-## La gestion des 'NA' (absence de données) dans les fichiers raster
+## 2.6. La gestion des 'NA' (absence de données) dans les fichiers raster
 Notre raster "précipitation janvier" contient les pixels "sans données"
 ```{r Présence de valeurs NA}
 head(rast_prec01[])
@@ -156,7 +161,7 @@ En dehors de R, dans un fichier raster (.tif, .asc), chaque pixel a une valeur n
 
 Une valeur particulière symbolise l'absence de données.
 
-## gdalUtils::gdalinfo
+## 2.7. gdalUtils::gdalinfo
 La commande gdalInfo permet de connaître la valeur qui symbolise les pixels 'NoData' (_absence de données_).
 
 Voir aussi https://www.gdal.org/gdalinfo.html
@@ -165,7 +170,7 @@ library(gdalUtils)
 gdalinfo("data/worldclim/wc2.0_10m_prec_01.tif")
 ```
 
-## Enregistrer un raster dans un format SIG
+## 2.8. Enregistrer un raster dans un format SIG
 ```{r Enregistrer un raster, eval=FALSE}
 rast_int <- trunc(rast_rand)
 rast_int[2] <- NA

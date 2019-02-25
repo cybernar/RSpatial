@@ -1,13 +1,19 @@
 ---
 title: "Le package raster : correction des exercices"
 author: "CEFE-CNRS"
-date: "17 juillet 2018"
+date: "25 février 2019"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+
+
+
+
+
 
 # Le package raster : correction des exercices
 

@@ -47,4 +47,8 @@ Les données utilisées dans le TP sont en libre accès sur Internet. Elles sont
 * Lovelace R. Introduction to visualising spatial data in R (https://github.com/Robinlovelace/Creating-maps-in-R, https://cran.r-project.org/doc/contrib/intro-spatial-rl.pdf) 
 * Racine E. The Visual Raster Cheat Sheet (https://rpubs.com/etiennebr/visualraster) 
 
+## Sommaire du cours
+
+- **TP1:** Manipulations de base sur les rasters
+- **TP2:** Ouvrir et afficher des données raster
 

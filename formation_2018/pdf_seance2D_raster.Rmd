@@ -1,7 +1,8 @@
 ---
 title: "Le package raster"
-author: "Cyril Bernard (CEFE-CNRS)"
-date: "19 février 2019"
+author: "CEFE-CNRS"
+subtitle: "TP4: rastérisation"
+date: "février 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -14,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # TP4. Rastérisation de données vecteur.
 
-## Téléchargement des données 
+## 4.1. Téléchargement des données 
 ```{r DL CLC}
 # dl 
 URL1 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/02/CLC.zip"
@@ -23,7 +24,7 @@ unzip("data/CLC.zip", exdir="data")
 ```
 
 
-## Rastériser un shapefile
+## 4.2. Rastériser un shapefile
 
 Rastériser = transformer les données vectorielles en raster.
 
@@ -33,7 +34,7 @@ Il existe 3 moyens de rastériser des données issues d'un shapefile avec R :
 * avec le package `gdalUtils`, fonction gdal_rasterize. Plus efficace.
 * avec le package `fasterize` : très perfomant, mais uniquement pour les données vectorielles de type polygone avec `sf`.
 
-## Exemple avec Corine Land Cover
+## 4.3. Exemple avec Corine Land Cover
 Dans les exemples suivants, nous transformerons en raster le fichier CLC12_D080_RGF.shp.
 
 Les valeurs à rastériser (Code CLC niveau 3) se trouvent dans le champ CODE_12 (type String). Dans le raster en sortie, les codes CLC devront être enregistrés en tant qu'entier (INT2U). 
@@ -47,7 +48,7 @@ Le raster obtenu, pour pouvoir être croisé avec les données satellitaires Sen
 
 Dans la foulée nous générerons également 2 autres raster avec les niveaux 1 et 2 de nomenclature.
 
-## Conversion en UTM31N
+## 4.4. Conversion en UTM31N
 Le fichier de départ CLC12_D080_RGF.shp est en Lambert 93 (EPSG:2154). La première tâche est de le convertir en UTM31N WGS84 (EPSG:32631). 
 ```{r Reprojeter shapefile}
 library(sp)
@@ -57,7 +58,7 @@ shp_clc80_l93 <- readOGR(dsn="data/CLC", layer="CLC12_D080_RGF")
 shp_clc80_utm31n <- spTransform(shp_clc80_l93, CRS("+init=EPSG:32631"))
 ```
 
-## Préparer le champ dont les valeurs seront enregistrées dans le raster
+## 4.5. Préparer le champ dont les valeurs seront enregistrées dans le raster
 Il faut également ajouter 3 champs NIV3_12, NIV2_12 et NIV1_12 qui contiendront les codes en entier pour les 3 niveaux de détails de la nomenclature.
 ```{r Ajouter champs entier niveaux 1 2 3}
 code_12 <- shp_clc80_utm31n$CODE_12 # attention factor !
@@ -69,21 +70,20 @@ writeOGR(shp_clc80_utm31n, dsn="data/CLC", layer="CLC12_D080_UTM31N",
          driver="ESRI Shapefile", overwrite_layer=T)
 ```
 
-## Rasterisation avec le package raster
+## 4.6. Rasterisation avec le package raster
 Rastérisons les codes de niveau 3.
 ```{r Exemple rasterize}
-#rast_sentinel2 <- brick("D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif")
 f_img_sat <- "D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif "
 rast_template <- raster(f_img_sat, band=1)
 
 start_time <- Sys.time()
-#rast_clc80_niv3 <- rasterize(shp_clc80_utm31n, rast_template, "NIV3_12", 
-#                             filename="data/CLC/CLC12_D080_NIV3.tif", datatype="INT2S", 
-#                             format="GTiff", overwrite=T, NAflag=-99)
+rast_clc80_niv3 <- rasterize(shp_clc80_utm31n, rast_template, "NIV3_12", 
+                             filename="data/CLC/CLC12_D080_NIV3.tif", datatype="INT2S", 
+                             format="GTiff", overwrite=T, NAflag=-99)
 Sys.time() - start_time
 ```
 
-## Rasterisation avec le package gdalUtils
+## 4.7. Rasterisation avec le package gdalUtils
 Rastérisons les codes de niveau 2.
 ```{r Exemple gdal_rasterize}
 library(gdalUtils)
@@ -106,7 +106,7 @@ Sys.time() - start_time
 extent(rast_template)
 ```
 
-## Rasterisation avec sf et fasterize
+## 4.8. Rasterisation avec sf et fasterize
 Rastérisons les codes de niveau 3.
 
 Utilisation du package fasterize :

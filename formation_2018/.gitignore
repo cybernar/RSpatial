@@ -8,8 +8,8 @@
 # subdir
 /data
 /knitted
-/media
-/seance1_sp_files
+# /media
+# /seance1_sp_files
 
 # pdf + html output
 *.pdf
@@ -17,5 +17,5 @@
 *.png
 *.md
 
-RSpatial.Rproj
+# RSpatial.Rproj
 .Rproj.user

@@ -1,8 +1,8 @@
 ---
 title: "Le package raster"
-author: "Cyril Bernard (CEFE-CNRS)"
-subtitle: "Les classes RasterLayer, RasterBrick, RasterStack"
-date: "31 janvier 2019"
+author: "CEFE-CNRS"
+subtitle: "TP3"
+date: "février 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -14,18 +14,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-
 # TP3 : RasterLayer, RasterBrick, RasterStack. 
-Algèbre raster. Résumés statistiques.
+Nous manipulerons dans ce TP les différentes classes de raster monocouche (`raster`) et
+multicouches (`brick`, `stack`).
+
+Nous aborderons aussi les opérateurs arithmétiques appliqués aux rasters et la fonction `calc`.
+
+Nous terminerons par les fonctions de résumés statistiques `freq` et `cellStats`.
 
 
-## Propriétés héritées de la classe Raster
+## 3.1 Propriétés héritées de la classe Raster
 ```{r Classe Raster et héritage}
 library(raster)
 showClass("Raster")
 ```
 
-## La classe RasterBrick
+## 3.2. La classe RasterBrick
 Une "RasterBrick" est un raster multi-couches issu d'1 fichier multi-couches.
 ```{r Lire une image satellite}
 #rast_sentinel2 <- brick("data/S2_Marquenterre_20180504.tif")
@@ -35,26 +39,26 @@ rast_sentinel2
 nlayers(rast_sentinel2)
 ```
 
-## RasterBrick + Plot = ?
+## 3.3. RasterBrick + Plot = ?
 La fonction plot affiche chacune des bandes.
 ```{r RasterBrick + Plot}
 plot(rast_sentinel2)
 ```
 
-## Composition colorée RGB 
+## 3.4. Composition colorée RGB 
 Pour obtenir une composition colorée RGB, utiliser la fonction plotRGB. 
 ```{r Composition coloree Couleurs vraies}
 plotRGB(rast_sentinel2, r=3, g=2, b=1, stretch="lin")
 ```
 
-## Et l'infra-rouge, ça donne quoi ?
+## 3.5. Et l'infra-rouge, ça donne quoi ?
 Les bandes 1, 2 et 3 correspondent respectivement au bleu, vert et rouge dans le rayonnement visible. La bande 4 correspond au proche-infrarouge.
 ```{r Composition coloree Infrarouge}
 plotRGB(rast_sentinel2, r=4, g=3, b=2, stretch="lin")
 ```
 
-## La classe RasterStack
-Un "RasterStack" (pile) est un raster multi-couches issu de plusieurs fichiers (ou plusieurs objets raster).
+## 3.6. La classe RasterStack
+Un `RasterStack` (pile) est **un raster multi-couches issu de plusieurs fichiers** (ou plusieurs objets raster).
 C'est donc un assemblage de plusieurs rasters à superposer. Il est possible de spécifier une liste de fichiers raster.
 
 Pour travailler efficacement, construisez le RasterStack avec des rasters de même étendue et de même résolution.
@@ -70,26 +74,27 @@ names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MA
                         "PREC.JUL", "PREC.AUG", "PREC.SEP", "PREC.OCT", "PREC.NOV", "PREC.DEC")
 ```
 
-## RasterStack + plot = ?
+## 3.7. RasterStack + plot = ?
 ```{r plot précipitations, eval=FALSE}
 plot(rast_precip)
 ```
 
-## Extraire une couche raster simple (RasterLayer) à partir d'un raster multi-couche (RasterBrick ou RasterStack)
+## 3.8. Extraire une couche raster simple (RasterLayer) à partir d'un raster multi-couche (RasterBrick ou RasterStack)
 Exemple : extraire les couches _Rouge_ et _Proche InfraRouge_ de l'image satellite.
 ```{r Extraire les couches R et PIR}
 rast_red <- raster(rast_sentinel2, layer=3)
 rast_nir <- raster(rast_sentinel2, layer=4)
 ```
 
-## Calculatrice raster
+## 3.9. Calculatrice raster
 Les opérateurs arithmétiques +, -, *, / sont utilisables pour combiner des rasters, ainsi que les fonctions mathématiques habituelles (exemples : sqrt, log, exp, sin, cos, tan ...)
 
 Calculons l'indice NDVI (végétation normalisé) à partir des couches Rouge et Proche Infrarouge de l'image Sentinel2.
 
 Formule de l'indice NDVI  : ```ndvi = (pir - r) / (pir + r)```
 
-## Exemple : extraire des couches et calculer le NDVI 
+## 3.10. Exemple: extraire des couches et calculer le NDVI 
+
 ```{r Calculer le NDVI}
 # NDVI = (PIR - R) / (PIR + R)
 rast_ndvi <- (rast_nir - rast_red) / (rast_nir + rast_red)
@@ -98,8 +103,8 @@ writeRaster(rast_ndvi, "data/NDVI_S2A_20180504_T31UCR.tif", overwrite=T)
 plot(rast_ndvi)
 ```
 
+## 3.11. **Exercice:** algèbre raster
 
-## Exercice 2 : algèbre raster
 Calculons à partir de notre image satellite A) l'indice de brillance et B) l'indice de cuirasse .
 
 Les formules sont :
@@ -115,7 +120,8 @@ rast_green <- raster(______________, _______)
 rast_ic <- _______________________________
 ```
 
-## calc : appliquer une fonction sur chaque pixel d'un raster multi-couches
+## 3.12. **calc:** appliquer une fonction sur chaque pixel d'un raster multi-couches
+
 Avec `calc`, nous pouvons calculer le NDVI d'une autre manière.
 
 Dans le sens de la _profondeur_, chaque pixel de notre image satellite peut être vu comme un vecteur à 4 valeurs : (1=B, 2=V, 3=R, 4=PIR).
@@ -128,7 +134,8 @@ f_ndvi <- function(v) {
 rast_ndvi2 <- calc(rast_sentinel2, f_ndvi)
 ```
 
-## Exercice 3 : opérations sur un raster multi-couches 
+## 3.13. **Exercice:** opérations sur un raster multi-couches 
+
 Q1) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
 ```{r Exercice 3A : extraction de valeurs et calcul sur une stack, eval=FALSE}
 villes_precip <- extract(___________, _____________)
@@ -144,7 +151,7 @@ Q3) Il est possible de calculer la somme d'une autre manière, avec une expressi
 rast_prec_annuel2 <- sum(___________)
 ```
 
-## Exercice 3 : opérations sur un raster multi-couches (suite)
+## 3.14. **Exercice:** opérations sur un raster multi-couches (suite)
 Q4) Afficher les précipitations annuelles dans un dégradé de bleu.
 ```{r Exercice 3D : plot, eval=FALSE}
 pal_blues <- brewer.pal(8,"Blues")
@@ -158,22 +165,22 @@ i <- which.max(_______________)
 veryrainyplace <- xyFromCell(_______________, _)
 ```
 
-## Outils de résumés statistiques : cellStats
+## 3.15. Outils de résumés statistiques: cellStats
 `cellstats` : résumé statistiques d'une couche raster
 ```{r cellstats}
 cellStats(rast_sentinel2, mean)
 cellStats(rast_sentinel2, sd)
 ```
 
-## Outils de résumés statistiques : freq
+## 3.16. Outils de résumés statistiques: freq
 `freq` : distribution des valeurs dans un raster
-```{r freq, eval=FALSE}
+```{r freq}
 hist_ndvi <- freq(rast_ndvi, digits=2)
 tail(hist_ndvi)
 ```
 
-## HOWTO : distribution des valeurs avec ggplot2
-```{r distribution des valeurs avec ggplot2, eval=FALSE}
+## 3.17 HOWTO: distribution des valeurs avec ggplot2
+```{r distribution des valeurs avec ggplot2}
 library(ggplot2)
 ggplot(data=data.frame(NDVI=rast_ndvi[])) +
   geom_histogram(mapping=aes(x=NDVI), binwidth=0.01)
