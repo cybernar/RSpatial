@@ -132,7 +132,7 @@ proj4string(sp_pts_df) <- CRS("+init=EPSG:4326")
 ### 2.5.1. Exercice: étudiez la structure d'1 objet SpatialPointDataFrame
 Exécutez les lignes suivantes et répondez aux questions :
 - Quels sont les __slots__ (propriétés) de l'objet ```sp_pts_df``` ?
-- Quel slot 
+- Quel slot contient la définition du système de coordonnées ?
 - Quel slot contient les coordonnées des points, et sous quelle forme ?
 
 ```{r exercice 2.5.1, eval=FALSE}
@@ -142,8 +142,9 @@ str(sp_pts_df)
 
 
 ### 2.5.2. Exercice: .csv -> SpatialPointDataFrame
-Créer un objet SpatialPointDataFrame à partir du fichier
-SpatialPointDataFrame
+Créer un objet SpatialPointDataFrame à partir du fichier MMM_MMM_VeloParc.csv 
+(cf. URL dans le code ci-dessous)
+
 ```{r exercice 2.5.2, eval=FALSE}
 URL <- "http://data.montpellier3m.fr/sites/default/files/ressources/MMM_MMM_VeloParc.csv"
 download.file(URL, "data/MMM_MMM_VeloParc.csv")
@@ -314,7 +315,8 @@ Remarque : pour connaître l'encodage des données, vous pouvez procéder par es
 ou ouvrir le fichier .cpg
 
 ```{r exercice 341, eval=FALSE}
-URL <- "https://www.data.gouv.fr/fr/datasets/r/3096e551-c68d-40ce-8972-a228c94c0ad1"
+# cf https://www.data.gouv.fr/fr/datasets/contours-des-departements-francais-issus-d-openstreetmap/
+URL <- "http://osm13.openstreetmap.fr/~cquest/openfla/export/departements-20140306-100m-shp.zip"
 download.file(URL, "data/departements-20140306-100m-shp.zip")
 unzip("data/departements-20140306-100m-shp.zip", exdir="data")
 shp_departements <- readOGR(dsn=__________,
@@ -383,7 +385,7 @@ Puis vous enregistrerez le résultat dans un nouveau fichier shapefile *test_lin
 
 ```{r transform CRS WGS84 > L93 SpatialLines, eval=FALSE}
 # transformation en RGF93 / Lambert93
-sp_lines_df_l93 <- spTransform(sp_lines_df, CRS(__________)
+sp_lines_df_l93 <- spTransform(sp_lines_df, CRS(__________))
 writeOGR(__________, dsn=__________, layer=__________, 
          driver=__________, overwrite_layer=TRUE)
 ```
@@ -477,13 +479,8 @@ tm_layout(main.title="Gares routières et SNCF dans la métropole de Montpellier
 tm_compass(type = "arrow", size=1.5, fontsize=0.6, position = c("right","top")) +
 tm_scale_bar(size=0.4, breaks=c(0,5,10)) +
 tm_credits("Données : Montpellier 3M, SNCF", position=c("left","bottom"))
-
 ```
-
-
-
-
-## 5. Exercice: lignes de tramways
+## 4.5. Exercice: lignes de tramways
 
 Dans cet exercice, vous allez partir du code ci-dessous avec tmap, pour 
 l'améliorer progressivement.
@@ -492,7 +489,6 @@ l'améliorer progressivement.
 2) Avec tmap, afficher chacune des 4 lignes de tramway avec une couleur particulière.
 
 ```{r tmap tram}
-# enonce
 tm_shape(shp_communes) +
   tm_polygons() +
 tm_shape(shp_tramlignes) +
@@ -501,22 +497,13 @@ tm_shape(shp_tramarrets) +
   tm_symbols(size=0.2) +
 tm_layout(main.title="Lignes de tramway dans la métropole de Montpellier", 
           main.title.position = c("center","top"), main.title.size = 1.)
-# solution
-tm_shape(shp_communes, bbox = shp_tramlignes@bbox) +
-  tm_polygons() +
-tm_shape(shp_tramlignes) +
-  tm_lines(col="num", palette=c("blue", "red", "green", "yellow")) +
-tm_shape(shp_tramarrets) +
-  tm_symbols(size=0.2) +
-tm_layout(main.title="Lignes de tramway dans la métropole de Montpellier", 
-          main.title.position = c("center","top"), main.title.size = 1.)
 ```
 
 
 
-# 6. COMMENT FAIRE POUR ...
+# 5. COMMENT FAIRE POUR ...
 
-## 6.1. Comment lire des coordonnées en degrés minutes secondes ?
+## 5.1. Comment lire des coordonnées en degrés minutes secondes ?
 char2dms convertit une chaîne en objet DMS. La chaîne doit se terminer par N,S,W ou E. Préciser le caractère utilisé pour les degrés, les minutes, les secondes (par défaut : d,',"). as.numeric convertit l'objet DMS en degrés décimaux.
 
 ```{r DMS 2 DD}
@@ -528,7 +515,7 @@ dd_lon <- as.numeric(char2dms(char_lon, "°", "'", "\""))
 leaflet() %>% addTiles() %>% addMarkers(lng=dd_lon, lat=dd_lat)
 ```
 
-## 6.2. Comment calculer une matrice de distance entre des points ?
+## 5.2. Comment calculer une matrice de distance entre des points ?
 spDists calcule les distances entre 2 ensembles de points.
 
 Si les coordonnées des points sont dans un système métrique (exemple UTM), alors utiliser longlat=FALSE pour obtenir la distance euclidienne en mètres.
@@ -551,7 +538,7 @@ names(v) <- c("PAR-MAD","MAD-BAI", "BAI-NYC")
 v
 ```
 
-## 6.3. Comment filtrer des données par attribut ?
+## 5.3. Comment filtrer des données par attribut ?
 Pour filtrer les données d'un objet Spatial*DataFrame d'après les valeurs d'une colonne, 
 nous procédons de la même manière d'avec un data.frame.
 
@@ -565,7 +552,7 @@ plot(shp_communes, col="grey")
 plot(shp_communes2, col="red", add=T)
 ```
 
-## 6.4. Comment joindre à un objet Spatial*DataFrame les attributs d'une autre table ?
+## 5.4. Comment joindre à un objet Spatial*DataFrame les attributs d'une autre table ?
 
 Dans l'exemple suivant nous joignons aux communes les données d'un tableau avec la population.
 Avec ```match```, nous redéfinissons l'ordre des données du tableau population ; puis nous ajoutons la nouvelle
@@ -591,7 +578,7 @@ head(shp_communes@data)
 ```
 
 
-## 6.5. Comment trouver dans quel polygone est situé un point ?
+## 5.5. Comment trouver dans quel polygone est situé un point ?
 
 Dans ```sp```, la fonction ```over``` permet facilement de faire certaines jointures spatiales. 
 
@@ -604,20 +591,21 @@ nb_stations <- as.data.frame(table(commune_tramarrets$nom))
 head(nb_stations)
 ```
 
+---
 
-## 6.6 Exercice : jointure spatiale + sélection
+## 5.5.1. Exercice : jointure spatiale + sélection
 
 Utilisez le data.frame __commune_tramarrets__ obtenu dans l'exercice précédent pour 
 déterminer et afficher les noms des arrêts de tramway situés sur la commune "PEROLS".
 
-```{r select by location}
+```{r select by location, eval=FALSE}
 # 
-indices_perols <- which(commune_tramarrets$nom=="PEROLS")
-shp_tramarrets$nom[indices_perols]
+indices_perols <- which(__________)
+__________$nom[indices_perols]
 ```
 
 
-## 6.4. Comment enregistrer vos données en KML pour les visualiser dans Google Earth ?
+## 5.6. Comment enregistrer vos données en KML pour les visualiser dans Google Earth ?
 
 Enregistrer des points sous forme de fichier KML est un autre moyen intéressant pour
 visualiser des données. 
@@ -640,33 +628,38 @@ kmlPoints(sp_pts_df,kmlfile="data/exemple_formation.kml",name=sp_pts_df$name, ic
 ```
 
 
-# 7. Révision
+# 6. Révision
 
-## 7.1. Exercice récapitulatif
+## 6.1. Exercice récapitulatif
 
 Dans cet exercice, nous allons réviser tous les chapitres vus précédemment.
 
 Nous utiliserons une fonction qui, à partir d'un point de départ, réalise une marche
 avec des pas de 10 m dans une direction aléatoire. 
 
-- Vous partirez d'un point P1 dont les coordonnées, en Lambert 93, sont : *X=766350, Y=6313470*.
+- Vous partirez d'un point P1 dont les coordonnées, en Lambert 93, sont : 
+*X=766350, Y=6313470*.
 - A partir de ce point de départ, réalisez 5 marches aléatoires de 100 pas de 50 m.
 Nous appellerons ces 5 marches : *RW1, RW2, RW3, RW4, RW5*.
 - Pour la marche *RW1*, mesurez la distance entre le point de départ et les points suivants. 
-Vous utiliserez pour cela la fonction ```sp::spDistsN1```.
-- Créez un objet ```SpatialLinesDataFrame``` nommé __sp_rw__ avec 5 entités Lines, à partir des 5 marches aléatoires.
+Vous utiliserez pour cela la fonction `sp::spDistsN1`.
+- Créez un objet `SpatialLinesDataFrame` nommé __sp_rw__ avec 5 entités Lines, 
+à partir des 5 marches aléatoires.
 Le système de coordonnées de __sp_rw__ sera Lambert 93 (EPSG:2154).
-Chaque entité aura pour attribut : un identifiant unique et la longueur renvoyée par ```SpatialLinesLengths```.
-- Avec leaflet, afficher __sp_rw__ sur un fond de carte OpenStreetMap
-- Transformer __sp_rw__ dans le système WGS84 ; vous créerez pour cela un nouvel objet ```SpatialLinesDataFrame``` nommé __sp_rw_wgs84__
-- Exporter __sp_rw_wgs84__ au format KML avec la fonction ```maptools::kmlLines```
+Chaque entité aura pour attribut : un identifiant unique et la longueur renvoyée 
+par `SpatialLinesLengths`.
+- Transformer __sp_rw__ dans le système WGS84 ; vous créerez pour cela un nouvel objet `SpatialLinesDataFrame` nommé __sp_rw_wgs84__
+- Avec leaflet, afficher __sp_rw_wgs84__ avec une couleur différente pour chaque trajet,
+sur un fond de carte OpenStreetMap
 
 --- 
 
-### 7.1.1. A compléter
+### 6.1.1. A compléter
 
 ```{r randow walk exercise, eval=FALSE}
 # random walk function
+library(sp)
+library(leaflet)
 f_point_in_circle <- function(x_from, y_from, step_dist=50, step_number=100) {
   angle <- runif(step_number + 1, 0, 360)
   x_diff <- step_dist * cos(angle)
@@ -675,41 +668,40 @@ f_point_in_circle <- function(x_from, y_from, step_dist=50, step_number=100) {
   y_pos <- y_from + cumsum(y_diff)
   cbind(x=x_pos, y=y_pos)
 }
+# point de depart
 p1 <- c(x=766350, y=6313470)
-rw_names <- c("RW1", "RW2", "RW3", "RW4", "RW5")
 # appeler 5 fois la fonction f_point_in_circle
 rw_matlist <- replicate(5, f_point_in_circle(p1["x"], p1["y"]), simplify = F)
-names(rw_matlist) <- rw_names
+rw_names <- c("RW1", "RW2", "RW3", "RW4", "RW5")
 
 # distance depart - points suivants
 f_distance_suivants <- function(matcoords) {
   spDistsN1(matcoords, matcoords[1,], longlat=F)
 }
-f_distance_suivants(rw_matlist$RW5)
+f_distance_suivants(rw_matlist[[5]])
 
-# creer SpatialLines
+# creer SpatialLines = list de Lines
 list_rw_lines <- list() 
-for (rw_name in rw_names) {
-  rw_coords <- rw_matlist[[rw_name]]
-  rw_line <- Line(rw_coords)
-  rw_lines <- Lines(list(rw_line), rw_name)
-  list_rw_lines[[rw_name]] <- rw_lines
+for (i in 1:5) {
+  rw_coords <- rw_matlist[[i]]
+  rw_name <- rw_names[i]
+  rw_line <- Line(__________)
+  rw_lines <- Lines(__________, rw_name)
+  list_rw_lines[[i]] <- rw_lines
 }
-sp_l <- SpatialLines(list_rw_lines, proj4string = CRS("+init=EPSG:2154"))
-df_attr <- data.frame(rw_names, long_m = SpatialLinesLengths(sp_l, longlat=F))
-sp_rw <- SpatialLinesDataFrame(sp_l, df_attr)
+sp_l <- SpatialLines(__________, proj4string = __________)
+df_attr <- data.frame(rw_names, 
+                      long_m = SpatialLinesLengths(sp_l, longlat=F), 
+                      row.names=__________)
+sp_rw <- SpatialLinesDataFrame(__________, __________)
 
 # transformation Lambert 93 -> WGS 84
-sp_rw_wgs84 <- spTransform(sp_rw, CRS("+init=EPSG:4326"))
-
+sp_rw_wgs84 <- spTransform(sp_rw, __________)
+coul5 <- c("cyan", "deeppink" ,"brown", "darkorange", "chartreuse")
 # carto leaflet avec une couleur differente pour chaque ligne
 leaflet(data=sp_rw_wgs84) %>%
   addTiles() %>%
-  addPolylines(color = c("cyan", "deeppink" ,"brown", "darkorange", "chartreuse"))
-
-# export KML
-kmlLines(sp_rw_wgs84, kmlfile = "data/test_random_walk.kml", 
-         col="deeppink", kmlname = "Formation RSpatial")
+  addPolylines(_____ = coul5)
 ```
 
 

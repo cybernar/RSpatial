@@ -1,6 +1,6 @@
 ---
 title: "Le package raster : correction des exercices"
-author: "Cyril Bernard (CEFE-CNRS)"
+author: "CEFE-CNRS"
 date: "17 juillet 2018"
 output: pdf_document
 ---
