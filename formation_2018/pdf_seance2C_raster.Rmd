@@ -1,7 +1,6 @@
 ---
-title: "Le package raster"
+title: "Le package raster - TP3"
 author: "CEFE-CNRS"
-subtitle: "TP3"
 date: "février 2019"
 output: pdf_document
 editor_options: 
@@ -11,7 +10,6 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 
 # TP3 : RasterLayer, RasterBrick, RasterStack. 
@@ -158,7 +156,7 @@ pal_blues <- brewer.pal(8,"Blues")
 plot(_______________, col=pal_blues, colNA="grey", main="Précipitations annuelles")
 ```
 
-Q4) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
+Q5) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
 ```{r Exercice 3E : which.min , eval=FALSE}
 cellStats(_______________, ___)
 i <- which.max(_______________)

@@ -1,7 +1,6 @@
 ---
-title: "Le package raster"
+title: "Le package raster - TP5"
 author: "CEFE-CNRS"
-subtitle: "TP5: visualisation avec tmap"
 date: "février 2019"
 output: pdf_document
 editor_options: 
@@ -75,12 +74,23 @@ df_nom <- filter(df_nom, CODE %in% unique(rast_clc80_niv2))
 #  tm_raster(style="cat", palette=df_nom$PAL, labels=df_nom$LIB_FR, title="Corine Land Cover 2012")
 #tm_shape(rast_clc80_niv2) +
 #  tm_raster(style="cat", palette=df_nom$PAL, title="Corine Land Cover 2012")
-
 ```
 
-## 5.7. HOWTO : tmap + raster + palette Hexa (suite et fin)
-```{r Lecture nomenclature CLC avec libellé et couleur 2}
-# bla
+## 5.7. Exercice
+
+A) Téléchargez le tracé de la randonnée "Les crocs - Autour du Marquenterre" 
+(voir URL1 dans le code ci-dessous). Avec tmap, créer une carte avec la photo
+satellite en couleur naturelle et l'itinéraire de randonnée en blanc.
+
+B) Téléchargez le contour des communes françaises. Avec tmap, afficher le NDVI
+et le contour des communes en noir.
+
+```{r exercice tmap}
+URL1 <- "https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx"
+URL2 <- "http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20190101-shp.zip"
 ```
 
+Pour savoir plus sur les données à télécharger :
+https://www.somme-tourisme.com/les-crocs-autour-du-marquenterre/saint-quentin-en-tourmont/randopic0800000j
+https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/
 

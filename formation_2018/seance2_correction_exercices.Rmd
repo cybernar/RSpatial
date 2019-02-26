@@ -1,52 +1,104 @@
 ---
 title: "Le package raster : correction des exercices"
 author: "CEFE-CNRS"
-date: "25 février 2019"
+date: "février 2019"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# TP2: Ouvrir et afficher des données raster
 
+## 2.1. Téléchargement des données pour les TP
 
-
-
-
-
-# Le package raster : correction des exercices
-
-## Chargement du package et chemin d'accès des données
-```{r Lecture fichier GeoTIFF}
+Charger les packages pour les codes dans ce document
+```{r load packages, message=FALSE}
 library(raster)
-setwd("D:/GitRepo/RSpatial/formation_2018")
+library(rgdal)
+library(raster)
+library(ggplot2)
 ```
 
-## Exercice 1 : extraire des valeurs
+Télécharger + décompresser données
+```{r DL data, eval=FALSE}
+# dl TP2
+URL1 <- "https://data.biogeo.ucdavis.edu/data/worldclim/v2.0/tif/base/wc2.0_10m_prec.zip"
+URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/02/S2_Marquenterre_20180504.zip"
+download.file(URL1, "data/wc2.0_10m_prec.zip")
+download.file(URL2, "data/S2_Marquenterre_20180504.zip")
+unzip("data/wc2.0_10m_prec.zip", exdir="data/worldclim")
+unzip("data/S2_Marquenterre_20180504.zip", exdir="data")
+# dl TP 4
+URL3 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/02/CLC.zip"
+download.file(URL3, "data/CLC.zip")
+unzip("data/CLC.zip", exdir="data")
 
-Déterminer les précipitations du mois de janvier pour Montpellier (3.8°E,43.6°N) et Paris (2.3°E, 48.8°N)
+```
 
-```{r Exercice 1: données}
-# lecture du raster : précipitations janvier
-rast_prec01 <- raster("data/WorldClim/wc2.0_10m_prec_01.tif")
-# créer une matrice avec x et y en colonnes
-villes_coords <- matrix(c(3.8, 2.3, 43.6, 48.8), ncol=2, dimnames=list(c("MTP","PAR"), c("long","lat")))
+## 2.2. Lire un raster
+```{r Lecture fichier}
+rast_prec01 <- raster("data/worldclim/wc2.0_10m_prec_01.tif")
+```
+
+## 2.5. Exercice 1 : extraire des valeurs
+Déterminer les précipitations du mois de janvier pour Montpellier (3.8°E,43.6°N) 
+et Paris (2.3°E, 48.8°N)
+
+```{r Exercice 1: définir 2 points}
+# on commence par créer une matrice avec x et y en colonnes
+villes_coords <- matrix(c(3.8, 2.3, 43.6, 48.8), 
+                        ncol=2, 
+                        dimnames=list(c("MTP","PAR"), c("long","lat")))
 villes_coords
 ```
 
 ```{r Exercice 1: extraction de valeur avec des points}
-# extraction methode 1 : determiner l'index des pixels avec cellFromXY, puis chercher la valeur
+# methode 1 : determiner l'index des pixels avec cellFromXY, puis chercher la valeur
 villes_ncell <- cellFromXY(rast_prec01,villes_coords)
 rast_prec01[villes_ncell]
 # methode 2 : avec extract
 extract(rast_prec01, villes_coords)
 ```
 
-## Exercice 2 : algèbre raster
-Calculons l'indice de brillance et l'indice de cuirasse à partir de notre image satellite.
-Formule : IB = sqrt(NIR^2 + R)
-Formule : IC = 3 * V - R - 100
+# TP3 : RasterLayer, RasterBrick, RasterStack. 
+
+## 3.2. La classe RasterBrick
+```{r Lire une image satellite}
+#rast_sentinel2 <- brick("data/S2_Marquenterre_20180504.tif")
+# probleme pour knitter ? utiliser le chemin complet 
+rast_sentinel2 <- brick("D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif")
+```
+
+## 3.6. La classe RasterStack
+
+```{r Création d une stack à partir de 12 fichiers GeoTIFF}
+# liste des fichiers wc2*.tif dans le répertoire WorldClim
+list_fich <- list.files(path="data/WorldClim", pattern="wc2.*\\.tif", full.names=T)
+rast_precip <- stack(list_fich, quick=T)
+# changeons les noms des 12 couches
+names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MAY", "PREC.JUN",
+                        "PREC.JUL", "PREC.AUG", "PREC.SEP", "PREC.OCT", "PREC.NOV", "PREC.DEC")
+```
+
+## 3.8. Extraire une couche raster simple à partir d'un raster multi-couche (brick ou stack)
+```{r Extraire les couches R et PIR}
+rast_red <- raster(rast_sentinel2, layer=3)
+rast_nir <- raster(rast_sentinel2, layer=4)
+```
+
+## 3.11. **Exercice:** algèbre raster
+
+Calculons à partir de notre image satellite A) l'indice de brillance et 
+B) l'indice de cuirasse .
+
+Les formules sont :
+
+* IB = sqrt(NIR^2 + R)
+* IC = 3 * V - R - 100
 
 ```{r Exercice 2 : calculatrice raster}
 # indice de brillance
@@ -57,35 +109,28 @@ rast_ic <- 3 * rast_green - rast_red - 100
 ```
 
 
-## Exercice 3 : opérations sur un raster multi-couches 
-Création d'un objet "stack" avec les précipitations sur 12 mois.
+## 3.13. **Exercice:** opérations sur un raster multi-couches 
 
-```{r Création d une stack à partir de 12 fichiers GeoTIFF}
-# liste des fichiers wc2*.tif dans le répertoire WorldClim
-list_fich <- list.files(path="data/WorldClim", pattern="wc2.*\\.tif", full.names=T)
-rast_precip <- stack(list_fich, quick=T)
-rast_precip
-names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MAY", "PREC.JUN",
-                        "PREC.JUL", "PREC.AUG", "PREC.SEP", "PREC.OCT", "PREC.NOV", "PREC.DEC")
-plot(rast_precip)
-```
-
-A) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
+Q1) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier 
+et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
 ```{r Exercice 3A : extraction de valeurs et calcul sur une stack}
 villes_precip <- extract(rast_precip, villes_coords)
 ```
 
-B) Générer un nouveau raster avec les précipitations annuelles (utiliser la fonction `calc` pour additionner les 12 mois)
+Q2) Générer un nouveau raster avec les précipitations annuelles (utiliser la fonction 
+`calc` pour additionner les 12 mois)
 ```{r Exercice 3B : extraction de valeurs et calcul sur une stack}
 rast_prec_annuel <- calc(rast_precip, fun=sum)
 ```
 
-C) Il est possible de calculer la somme d'une autre manière, avec une expression plus intuitive que `calc`. Chercher comment dans l'aide de la fonction calc (`?calc`)
+Q3) Il est possible de calculer la somme d'une autre manière, avec une expression 
+plus intuitive que `calc`. Chercher comment dans l'aide de la fonction calc (`?calc`)
 ```{r Exercice 3C : sum}
 rast_prec_annuel2 <- sum(rast_precip)
 ```
 
-D) Afficher les précipitations annuelles dans un dégradé de bleu.
+## 3.14. **Exercice:** opérations sur un raster multi-couches (suite)
+Q4) Afficher les précipitations annuelles dans un dégradé de bleu.
 ```{r Exercice 3D : plot}
 library(RColorBrewer)
 pal_blues <- brewer.pal(8,"Blues")
@@ -94,11 +139,112 @@ plot(rast_prec_annuel,
      main="Précipitations annuelles")
 ```
 
-E) Quelle est la valeur maximale pour les précipitations annuelles ? Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
+Q5) Quelle est la valeur maximale pour les précipitations annuelles ? 
+Retrouver les coordonnées du pixel le plus arrosé du monde avec la fonction `which.max`.
 ```{r Exercice 3E : which.min}
 cellStats(rast_prec_annuel, max)
 i <- which.max(rast_prec_annuel)
 veryrainyplace <- xyFromCell(rast_prec_annuel, i)
+veryrainyplace
 ```
+
+# TP4. Rastérisation de données vecteur.
+
+**TODO: exercices rasterize**
+
+# TP5. Visualisation des données raster
+
+**TODO: exercices tmap**
+
+# TP6. Masques. Statistiques zonales. Statistiques focales.
+
+### 6.1.1. Chargement des données pour les TP
+
+```{r TP6 charger donnees}
+# chargement des donnees
+rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
+rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
+pal_YlGr <- brewer.pal(5,"YlGn")
+lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
+```
+
+### 6.1.2. Exercice masque (1)
+
+**Exercice** : créer un masque à partir de CLC niveau 2 qui servira à masquer 
+les zones de type "Zones humides côtières" et "Eaux maritimes". Pour cela, assigner 
+les valeurs NA aux pixels = 42 ou 52 puis appliquer ce masque sur le raster NDVI. 
+Afficher le raster NDVI masqué, avec un dégradé Jaune-Vert.
+
+```{r Exercice 612: masques}
+# masque à partir du raster CLC
+# les pixels avec les valeurs 42 et 52 deviennent NA
+rast_mask <- rast_clc80_niv2
+rast_filtre <- rast_clc80_niv2 %in% c(42,52)
+rast_mask[rast_filtre] <- NA
+# appliquer filter
+rast_ndvi_mask <- mask(rast_ndvi, rast_mask)
+# plot raster
+plot(rast_ndvi_mask, col=pal_YlGr, breaks=lim)
+```
+
+### 6.1.3. Exercice masque (2)
+
+**Exercice** : afficher la distribution du NDVI pour les zones de cultures 
+Ce sont dans CLC niveau 2 les zones dont le code est : 21, 22, 23, 24).
+
+```{r Exercice 613: mask et distribution des valeurs avec ggplot2}
+# masquer les valeurs différentes de 21, 22, 23, 24
+rast_mask <- rast_clc80_niv2
+rast_filtre <- !(rast_clc80_niv2 %in% c(21, 22, 23, 24))
+rast_mask[rast_filtre] <- NA
+rast_ndvi_mask <- mask(rast_ndvi, rast_mask)
+# afficher distribution avec ggplot
+ggplot(data=data.frame(NDVI=rast_ndvi_mask[])) +
+  geom_histogram(mapping=aes(x=NDVI), binwidth=0.01)
+```
+
+### 6.2.1. Exercice `zonal`
+
+**Exercice** : à partir de *rast_ndvi* et *rast_clc80_niv2*, créer un `data.frame` 
+qui montre, pour chaque type d'occupation du sol, quelle est la moyenne et la dispersion
+de la valeur de NDVI (utiliser la fonction `sd`) et la surface totale du type d'occupation 
+du sol en hectares (utiliser `freq`).
+
+```{r exercice zonal}
+ndvi_by_clc_mean <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="mean")
+ndvi_by_clc_sd <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="sd")
+surf_by_clc <- freq(rast_clc80_niv2)
+df_stats_by_clc <- data.frame(CODE=ndvi_by_clc_mean[,1], 
+                              NDVI_MEAN=ndvi_by_clc_mean[,2], 
+                              NDVI_SD=ndvi_by_clc_sd[,2], 
+                              SURF_HA=surf_by_clc[,2] * 0.01)
+head(df_stats_by_clc)
+```
+
+### 6.3.1. Extraction de valeurs avec des points
+
+```{r extract points}
+pp <- c("sol nu 1", "sol nu 2", "conifere 1", "conifere 2", "maraich 1")
+px <- c(400560, 401740, 397320, 398330, 401460)
+py <- c(5572420, 5570420, 5570260, 5571820, 5567670)
+```
+
+### 6.3.3. Exercice: que fait la fonction suivante ?
+
+```{r exercice 633}
+test <- extract(x=rast_clc80_niv2, y=cbind(px, py), buffer=1000, 
+                fun=function(x) length(unique(x)))
+```
+
+Réponse : à partir de CLC niveau 2, calcul **dans un rayon de 1000 mètres** autour 
+de chaque pixel le **nombre de types d'occupation du sol différents**.
+
+### 6.4.4. Exercice : dilatation, érosion
+
+**TODO**
+
+### 6.4.5. Exercice : mode, nombre de valeurs uniques
+
+**TODO**
 
 

@@ -1,6 +1,5 @@
 ---
-title: "Le package raster"
-subtitle: "TP1 et TP2 : Raster from scratch, lecture de fichier"
+title: "Le package raster - TP1 et TP2"
 author: "CEFE-CNRS"
 date: "février 2019"
 output: pdf_document
@@ -100,16 +99,13 @@ Voir aussi `cut` et `reclassify`
 - Worldclim 
 - Sentinel2
 
-```{r DL data, eval=FALSE}
-URL1 <- "http://biogeo.ucdavis.edu/data/worldclim/v2.0/tif/base/wc2.0_10m_prec.zip"
+```{r DL data}
+URL1 <- "https://data.biogeo.ucdavis.edu/data/worldclim/v2.0/tif/base/wc2.0_10m_prec.zip"
 URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/01/S2_Marquenterre_20180504.tif"
 download.file(URL1, "data/wc2.0_10m_prec.zip")
 download.file(URL2, "data/S2_Marquenterre_20180504.tif")
-#download.file(URL4, "data/MMM_MMM_VeloParc.csv")
 unzip("data/wc2.0_10m_prec.zip", exdir="data/worldclim")
-#unzip("data/S2_Marquenterre_20180504.zip", exdir="data/sentinel2")
 ```
-
 
 
 ## 2.2. Lire un raster

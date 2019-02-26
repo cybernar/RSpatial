@@ -1,7 +1,6 @@
 ---
-title: "Le package raster"
+title: "Le package raster - TP4"
 author: "CEFE-CNRS"
-subtitle: "TP4: rastérisation"
 date: "février 2019"
 output: pdf_document
 editor_options: 

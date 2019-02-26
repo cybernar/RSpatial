@@ -1,5 +1,5 @@
 ---
-title: "Le package raster"
+title: "Le package raster - TP6"
 author: "Cyril Bernard (CEFE-CNRS)"
 date: "31 janvier 2019"
 output: pdf_document
@@ -26,35 +26,53 @@ La fonction `mask` permet d'appliquer un masque à d'autre raster.
 
 ---
 
-### 6.1.1. Exercice 
+### 6.1.1. Chargement des données pour les TP
 
-**Exercice** : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
-Appliquer ce masque sur le raster NDVI.
-
-```{r Exercice 611: masques}
+```{r TP6 charger donnees, message=FALSE}
 # chargement des donnees
 library(raster)
+library(rgdal)
+library(RColorBrewer)
 rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
 rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
-# masque
-rast_mask <- rast_clc80_niv2
-rast_bool <- rast_clc80_niv2 %in% c(42,52)
-rast_mask[rast_bool] <- NA
-rast_ndvi_mask <- mask(rast_ndvi, rast_mask)
-library(RColorBrewer)
 pal_YlGr <- brewer.pal(5,"YlGn")
 lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
-plot(rast_ndvi_mask,col=pal_YlGr,breaks=lim)
 ```
 
+---
 
-## 6.1.2. Exercice masque
+### 6.1.2. Exercice masque (1)
 
-**Exercice** : afficher la distribution du NDVI pour les zones de cultures
+**Exercice** : créer un masque à partir de CLC 2012 niveau 2. Assigner les valeurs NA aux pixels = 42 ou 52.
+Appliquer ce masque sur le raster NDVI. Afficher le raster NDVI masqué avec un dégradé Jaune-Vert.
 
-```{r mask et distribution des valeurs avec ggplot2, eval=FALSE}
-library(ggplot2)
-ggplot(data=data.frame(NDVI=rast_ndvi_mask[])) +
+```{r Exercice 612: masques, eval=FALSE}
+# masque à partir du raster CLC
+# les pixels avec les valeurs 42 et 52 deviennent NA
+rast_mask <- rast_clc80_niv2
+rast_filtre <- rast_clc80_niv2 %in% c(42,52)
+rast_mask[rast_filtre] <- NA
+# appliquer filter
+rast_ndvi_mask <- mask(rast_ndvi, __________)
+# plot raster
+plot(rast_ndvi_mask, col=__________, breaks=lim)
+```
+
+---
+
+### 6.1.3. Exercice masque (2)
+
+**Exercice** : afficher la distribution du NDVI pour les zones de cultures 
+Ce sont dans CLC niveau 2 les zones dont le code est : 21, 22, 23, 24).
+
+```{r Exercice 613: mask et distribution des valeurs avec ggplot2, eval=FALSE}
+# masquer les valeurs différentes de 21, 22, 23, 24
+rast_mask <- rast_clc80_niv2
+rast_filtre <- !(__________ %in% __________)
+rast_mask[rast_filtre] <- NA
+rast_ndvi_mask <- mask(rast_ndvi, __________)
+# afficher distribution avec ggplot
+ggplot(data=data.frame(NDVI=__________)) +
   geom_histogram(mapping=aes(x=NDVI), binwidth=0.01)
 ```
 
@@ -71,20 +89,24 @@ on voudrait connaître le NDVI moyen (```mean```) et la dispersion (```sd```).
 ndvi_by_clc_mean <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="mean")
 ```
 
-## 6.2.1. Exercice `zonal`
+---
 
-**Exercice** : pour chaque type d'occupation du sol, calculer la dispersion de la
-valeur de NDVI (utiliser zonal avec la fonction sd```sd```) et la surface totale 
-du type d'occupation du sol en ha (utiliser freq).
+### 6.2.1. Exercice `zonal`
 
-```{r calcul NDVI moyen par code CLC}
-ndvi_by_clc_sd <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="sd")
-surf_by_clc <- freq(rast_clc80_niv2)
+**Exercice** : à partir de *rast_ndvi* et *rast_clc80_niv2*, créer un `data.frame` 
+qui montre, pour chaque type d'occupation du sol, quelle est la moyenne et la dispersion
+de la valeur de NDVI (utiliser la fonction `sd`) et la surface totale du type d'occupation 
+du sol en hectares (utiliser `freq`).
+
+```{r exercice zonal, eval=FALSE}
+ndvi_by_clc_mean <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="mean")
+ndvi_by_clc_sd <- zonal(x=__________, z=__________, fun=__________)
+surf_by_clc <- freq(__________)
 df_stats_by_clc <- data.frame(CODE=ndvi_by_clc_mean[,1], 
                               NDVI_MEAN=ndvi_by_clc_mean[,2], 
-                              NDVI_SD=ndvi_by_clc_sd[,2], 
-                              SURF_HA=surf_by_clc[,2] * 0.01)
-
+                              NDVI_SD=__________, 
+                              SURF_HA=__________ * 0.01)
+head(df_stats_by_clc)
 ```
 
 ## 6.3. Extraction de valeurs et stats zonales avec `extract`
@@ -114,8 +136,7 @@ ndvi_pts_100 <- extract(x=rast_ndvi, y=cbind(px, py), buffer=100, fun=mean, na.r
 Si `y` est un ensemble de polygones, on peut agréger les valeurs des pixels pour chaque polygones en indiquant une function après `fun=`
 
 ```{r extract polygones}
-# extraire le NDVI moyen par code CLC, à partir du fichier vectoriel CLC
-library(rgdal)
+# extraire le NDVI moyen par polygone, à partir du fichier vectoriel CLC
 shp_clc_utm <- readOGR(dsn="data/CLC", layer="CLC12_D080_UTM31N")
 ndvi_by_polygone <- extract(x=rast_ndvi, y=shp_clc_utm, fun=mean, na.rm=F)
 shp_clc_utm$ndvi_mean <- as.numeric(ndvi_by_polygone)
@@ -125,9 +146,11 @@ plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 plot(shp_clc_utm2, add=T, col=pal_YlGr[findInterval(shp_clc_utm2$ndvi_mean, lim)])
 ```
 
+---
+
 ### 6.3.3. Exercice: que fait la fonction suivante ?
 
-```{r exercice 633}
+```{r exercice 633, eval=FALSE}
 test <- extract(x=rast_clc80_niv2, y=cbind(px, py), buffer=1000, 
                 fun=function(x) length(unique(x)))
 ```
@@ -135,6 +158,8 @@ test <- extract(x=rast_clc80_niv2, y=cbind(px, py), buffer=1000,
 ## 6.4. Statistiques focales
 
 La fonction `focal` calcule pour chaque pixel du raster en entrée une valeur d'après son voisinage. Le principe est de définir une fenêtre de calcul sous la forme d'une **matrice de poids** puis d'y appliquer une fonction (ex : sum, mean, modal).
+
+---
 
 ### 6.4.1. Exemples de matrice pour la fenêtre de calcul
 
@@ -151,23 +176,22 @@ Remarque : la fenêtre a toujours des dimensions impaires (3x3, 5x5...)
 
 --- 
 
-### 6.4.2. Exemples d'applications
+### 6.4.2. Exemples d'utilisation de la fonction `focal`
 
 - Lissage de données raster : moyenne des valeurs ds un rayon de n mètres, gaussienne avec un rayon de recherche
 - Dilatation / érosion : dilater les zones avec des pixels forêts
 - Automates cellulaires : en fonction des voisins, faire vivre ou mourir un pixel ...
 
-### 6.4.2. Exemple : calcul de moyenne avec différentes fenêtres de calcul
+---
 
-### 6.4.3. Exercice : dilatation
+### 6.4.3. Exemple : calcul de moyenne avec différentes fenêtres de calcul
 
-### 6.4.4. Exercice : mode, nombre de valeurs uniques
+---
 
+### 6.4.4. Exercice : dilatation, érosion
 
+---
 
-https://www.somme-tourisme.com/les-crocs-autour-du-marquenterre/saint-quentin-en-tourmont/randopic0800000j
-https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx
+### 6.4.5. Exercice : mode, nombre de valeurs uniques
 
-https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/
-http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20190101-shp.zip
 

@@ -39,5 +39,4 @@ vignettes/*.pdf
 *.pdf
 *.html
 
-RSpatial.Rproj
 .Rproj.user

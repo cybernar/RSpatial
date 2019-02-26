@@ -49,6 +49,10 @@ Les données utilisées dans le TP sont en libre accès sur Internet. Elles sont
 
 ## Sommaire du cours
 
-- **TP1:** Manipulations de base sur les rasters
-- **TP2:** Ouvrir et afficher des données raster
-
+- **TP1:** Manipulations de base sur les rasters, raster "from scratch".
+- **TP2:** Ouvrir et afficher des données raster.
+- **TP3:** Les classes RasterLayer, RasterBrick, RasterStack. 
+Opérations arithmétiques, fonction `calc`. Résumés statistiques, distribution des pixels.
+- **TP4:** Rastérisation de données vecteur : 3 manières de procéder.
+- **TP5:** Visualisation avec `tmap`.
+- **TP6:** Les fonctions `zonal` et `focal` : statistiques de zones, statistiques de voisinages.
