@@ -159,7 +159,7 @@ proj4string(sp_exercice) <- ______________
 
 Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.35 nous montre la composition de la class `SpatialPoints`.
 
-![](media/asdar_p35.png)
+![](media/original/asdar_p35.png)
 
 ---
 

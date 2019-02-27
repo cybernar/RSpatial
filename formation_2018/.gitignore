@@ -14,7 +14,7 @@
 # pdf + html output
 *.pdf
 *.html
-*.png
-*.md
+#*.png
+#*.md
 
 .Rproj.user
