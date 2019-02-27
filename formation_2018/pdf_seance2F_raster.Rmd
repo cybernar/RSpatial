@@ -1,7 +1,7 @@
 ---
 title: "Le package raster - TP6"
 author: "Cyril Bernard (CEFE-CNRS)"
-date: "31 janvier 2019"
+date: "février 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -186,12 +186,72 @@ Remarque : la fenêtre a toujours des dimensions impaires (3x3, 5x5...)
 
 ### 6.4.3. Exemple : calcul de moyenne avec différentes fenêtres de calcul
 
+```{r focal}
+# moyenne avec pixels voisins (fenetre rectangulaire 3x3)
+rast_focal_r1 <- focal(x=rast_ndvi, w=mr1, fun=mean)
+# même résultat que le précédent, mais plus efficace
+rast_focal_r2 <- focal(x=rast_ndvi, w=mr2)
+# fenetre circulaire 50 m de rayon 
+rast_focal_c1 <- focal(x=rast_ndvi, w=mc1)
+```
+
 ---
 
-### 6.4.4. Exercice : dilatation, érosion
+### 6.4.4. Exercice : mode, nombre de valeurs uniques
+**TODO**
 
 ---
 
-### 6.4.5. Exercice : mode, nombre de valeurs uniques
+### 6.4.5. Exercice : dilatation
+Exemple de dilatation sur des données binaires avec avec fenêtre de 3x3 : https://en.wikipedia.org/wiki/Dilation_(morphology)
+https://docs.opencv.org/2.4/doc/tutorials/imgproc/erosion_dilatation/erosion_dilatation.html
+
+L'exercice consiste à dilater les polygones de type "forêt" dans CLC (code=31) et 
+répéter 5 fois l'opération. 
+
+Refaire l'exercice avec une contrainte : les forêts peuvent s'étendre, mais pas sur
+les pixels de type "zones humides" (code = 41 ou 42) ou "eaux" (code = 51 ou 52).
+
+```{r dilatation, eval=FALSE}
+# fenetre 3x3 avec les valeurs d'origine (poids=1)
+mr1 <- matrix(1, nrow=_____, ncol=_____)
+dilate_forest <- function(m) {
+  # valeur du pixel central (note: les pixels voisins sont passés comme vecteur à la fonction)
+  v <- m[5]
+  # retirer le pixel central et les eventuels pixels NA du test : na.omit
+  mm <- na.omit(m[-5])
+  # y a-t-il un 31 dans le voisinage ? si oui 31 sinon pixel central
+  if (any(_____)) _____ else _____
+}
+# copy raster
+rast_dilated <- rast_clc80_niv2
+for (i in 1:5) {
+  rast_dilated <- focal(x=__________, w=mr1, fun=dilate_forest)
+}
+# plot tmap resultat
+pal_clc <- c("#E6004D", "#A600CC", "#FFA6FF", "#FFFFA8", "#E6E64D", "#FFE6A6",
+             "#80FF00", "#CCF24D", "#E6E6E6", "#A6A6FF", "#CCCCFF", "#00CCF2", "#00FFA6")
+tm1 <- tm_shape(rast_clc80_niv2) +
+  tm_raster(style="cat", palette=pal_clc, title="CLC 2012", legend.show=FALSE)
+tm2 <- tm_shape(rast_dilated) +
+  tm_raster(style="cat", palette=pal_clc, title="Dilate", legend.show=FALSE)
+tmap_arrange(tm1, tm2)
+
+# v2
+dilate_forest_v2 <- function(m) {
+  # valeur du pixel central
+  v <- m[5]
+  # retirer le pixel central et les eventuels pixels NA du test : na.omit
+  mm <- na.omit(m[-5])
+  # si c'est de l'eau (41,42,51,52) ou si aucun 31 autour, alors no change
+  if (v %in% c(_____, _____, _____, _____) || all(mm!=_____)) _____ else _____
+}
+# copy raster
+rast_dilated <- rast_clc80_niv2
+for (i in 1:5) {
+  rast_dilated <- focal(x=__________, w=mr1, fun=dilate_forest_v2)
+}
+```
+
 
 
