@@ -42,7 +42,7 @@ Exemples :
 ## 1.4. sp, rgeos, sf
 Le package **rgeos** a longtemps été, en complément de sp, le seul moyen de faire certains calculs tels que : _zones tampons, intersection, calcul de longueur et de surface_. La logique de rgeos est difficile à appréhender, son efficacité n'est pas optimale.
 
-Heureusement le package **sf** est arrivé ! Il est beaucoup plus rapide et simple d'utilisation. Mais il introduit un nouveau modèle de données différent de sf.
+Heureusement le package **sf** est arrivé ! Il est beaucoup plus rapide et simple d'utilisation. Mais il introduit un nouveau modèle de données différent de **sp**.
 
 ## 1.5. Conclusion
 
@@ -159,7 +159,7 @@ proj4string(sp_exercice) <- ______________
 
 Le schema suivant tiré du "ASDAR Book" (<http://www.asdar-book.org/>), p.35 nous montre la composition de la class `SpatialPoints`.
 
-![](media/original/asdar_p35.png)
+![](media/original/asdar_p35.png){width=400px}
 
 ---
 
