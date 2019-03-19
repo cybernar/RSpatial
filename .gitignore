@@ -34,6 +34,9 @@ vignettes/*.pdf
 
 # data
 **/data/
+**/data1/
+**/data2/
+**/archives/
 
 # pdf + html output
 *.pdf
