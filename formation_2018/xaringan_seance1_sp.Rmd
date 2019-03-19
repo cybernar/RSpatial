@@ -1,6 +1,6 @@
 ---
 title: "Le package sp"
-author: "Cyril Bernard (CEFE-CNRS)"
+author: "CEFE-CNRS"
 date: "20 mars 2019"
 output:
   xaringan::moon_reader:
@@ -15,7 +15,6 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 options(htmltools.dir.version = FALSE)
 ```
 
