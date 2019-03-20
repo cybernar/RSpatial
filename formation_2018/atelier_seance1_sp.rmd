@@ -389,14 +389,14 @@ plot(shp_communes,
 ]
 
 .pull-right[
-![](`r knitr::fig_chunk("readOGR_exemple2", "png")`)
+![](`r knitr::fig_chunk("readOGR_exemple", "png")`)
 ]
 
 ---
 
 ## 3.4. Lire un shapefile avec rgdal::readOGR
 
-```{r readOGR_exemple2, fig.show="hide"}
+```{r readOGR_exemple2}
 # shp_communes : données attributaires
 head(shp_communes@data)
 ```
@@ -608,7 +608,7 @@ http://www.r-graph-gallery.com/42-colors-names/
 ]
 
 .pull-right[
-![](`r knitr::fig_chunk("tmap", "png")`)
+![](`r knitr::fig_chunk("tmap2", "png")`)
 ]
 
 
