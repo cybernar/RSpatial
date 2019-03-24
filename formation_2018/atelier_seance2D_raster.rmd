@@ -27,8 +27,8 @@ library(sp)
 library(rgdal)
 library(raster)
 library(gdalUtils)
-#library(sf)
-#library(fasterize) 
+library(sf)
+library(fasterize) 
 ```
 
 ---
@@ -107,7 +107,7 @@ f_out <- "data2/CLC/CLC12_D080_NIV2.tif"
 ext_in <- extent(rast_template)
 te_in <- ext_in[c(1,3,2,4)]
 start_time <- Sys.time()
-rast_niv2 <- gdal_rasterize(src_datasource=f_in,
+rast_niv2 <- gdalUtils::gdal_rasterize(src_datasource=f_in,
                             dst_filename=f_out,
                             a="NIV2_12",
                             of="GTiff",
@@ -136,8 +136,6 @@ Voir https://github.com/ecohealthalliance/fasterize
 ## 4.8. Rasterisation avec sf et fasterize
 
 ```{r Exemple fasterize}
-library(sf)
-library(fasterize) 
 f_in <- "data2/CLC/CLC12_D080_UTM31N.shp"
 f_out <- "data2/CLC/CLC12_D080_NIV1.tif"
 shp_in <- st_read(f_in)

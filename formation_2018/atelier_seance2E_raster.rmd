@@ -24,13 +24,26 @@ options(htmltools.dir.version = FALSE)
 
 # TP5. Visualisation des données raster
 
-Chargement des packages pour le TP 5
+Chargement des packages pour le TP 5, et téléchargement des données
+
 ```{r chargement_packages, message=FALSE}
 library(raster)
 library(openxlsx)
 library(dplyr)
 library(tmap)
+library(rgdal)
+
+URL1 <- "https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx"
+#URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/03/OSM80.zip"
+download.file(URL1, "data2/Lescrocs.gpx")
+#download.file(URL2, "data2/OSM80.zip")
+#unzip("data2/OSM80.zip", exdir="data2")
 ```
+
+Pour savoir plus sur les données téléchargées :
+
+https://www.somme-tourisme.com/les-crocs-autour-du-marquenterre/saint-quentin-en-tourmont/randopic0800000j
+https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/
 
 ---
 
@@ -48,7 +61,6 @@ Des paramètres à connaître :
 
 .pull-left[
 ```{r Ameliorons_plot_1, fig.show="hide"}
-library(raster)
 rast_ndvi <- raster("data2/NDVI_S2A_20180504_T31UCR.tif")
 plot(rast_ndvi)
 ```
@@ -93,13 +105,20 @@ plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 
 ---
 
-## 5.5. HOWTO : Corine L C avec couleurs standardisées ?
+## 5.5. plot et variable quantitave
 
 .pull-left[
+
+Essayons `plot` avec un raster Corine Land Cover niveau 2 (codes entre 11 et 52) 
+
 ```{r Plot_de_base_CLC, fig.show="hide"}
+# plot avec la palette par défaut
 rast_clc80_niv2 <- raster("data2/CLC/CLC12_D080_NIV2.tif")
 plot(rast_clc80_niv2)
 ```
+
+Pour des couleurs adaptées, il faudrait créer une palette ... avec toutes les valeurs
+de 0 à 52.
 ]
 
 .pull-right[
@@ -108,7 +127,63 @@ plot(rast_clc80_niv2)
 
 ---
 
-## 5.6. HOWTO : tmap + raster + palette Hexa
+## 5.6. Raster avec tmap : variable quantitative
+
+La méthode utilisée pour générer l'échelle de couleur est déterminée par `style` :
+
+- `style="cont"` pour une échelle continue de couleurs
+- `style="equal"` ou `"quantile"` ou `"fixed"` pour définir des classes avec des couleurs 
+discretisées (classes à intervalles égaux, par quantiles, ou définies par l'utilisateur).
+
+Si `style="fixed"`, alors définir les limites des classes avec `breaks`.
+
+---
+
+### 5.6.1. Raster avec tmap : couleurs continues
+
+.pull-left[
+```{r tmap_raster_cont, fig.show="hide"}
+# affiche NDVI palette continue
+tm_shape(rast_ndvi) +
+  tm_raster(style="cont", palette="YlGn", 
+            title="NDVI 20180504")
+```
+]
+
+.pull-right[
+![](`r knitr::fig_chunk("tmap_raster_cont", "png")`)
+]
+
+
+---
+
+### 5.6.2. Raster avec tmap : couleurs discrétisées
+
+.pull-left[
+```{r tmap_raster_fixed, fig.show="hide"}
+# affiche NDVI palette X 5 classes
+tm_shape(rast_ndvi) +
+  tm_raster(style="fixed", palette="YlGn", breaks = c(-1, 0, 0.2, 0.5, 0.8, 1), 
+            title="NDVI 20180504")
+```
+]
+
+.pull-right[
+![](`r knitr::fig_chunk("tmap_raster_fixed", "png")`)
+]
+
+
+---
+
+## 5.7. Raster avec tmap : variable quantitative
+
+Lorsque `style="cat"`, les valeurs du raster sont traitées comme des catégories 
+(exemple les codes de __Corine Land Cover__). Créer et passer à `tm_raster` 
+une palette correspondante.
+
+---
+
+## 5.7.1. HOWTO : tmap + raster CLC + palette Hexa
 
 ```{r Lecture_nomenclature_CLC, message=FALSE, fig.show="hide"}
 # lire fichier nomenclature, feuille 2
@@ -134,31 +209,52 @@ tm_shape(rast_clc80_niv2) +
 
 ---
 
-## 5.6. HOWTO : tmap + raster + palette Hexa
+## 5.7.1. HOWTO : tmap + raster + palette Hexa
 
 ![](`r knitr::fig_chunk("Lecture_nomenclature_CLC", "png")`)
 
 ---
 
-## 5.7. Exercice
+## 5.8. Exercice tmap : raster + vecteur (1)
 
-A) Téléchargez le tracé de la randonnée "Les crocs - Autour du Marquenterre" 
-(voir URL1 dans le code ci-dessous). Avec tmap, créer une carte avec la photo
-satellite en couleur naturelle et l'itinéraire de randonnée en blanc.
+Le shapefile "communes-20190101-dep80.shp" contient les communes du département 
+de la Somme sous forme de polygones. 
 
-B) Téléchargez le contour des communes françaises. Avec tmap, afficher le NDVI
-et le contour des communes en noir.
+Avec *tmap*, affichez le NDVI (échelle de couleurs continue) et le contour des communes
+en noir. Avec `?tm_polygons`, cherchez la fonction qui permet d'afficher uniquement 
+le contour des polygones sans remplissage. Avec la fonction `tm_text`, affichez les 
+noms des communes, tirés de la colonne __nom__.
 
-```{r exercice_tmap}
-URL1 <- "https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx"
-URL2 <- "http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20190101-shp.zip"
+```{r exerciceA_tmap, eval=FALSE}
+# lire shapefile communes DEP80
+shp_communes <- readOGR(dsn="data2/OSM80", layer="communes-20190101-dep80")
+# affiche NDVI palette continue + limite des communes 
+tm_shape(rast_ndvi) +
+  tm_raster(style="cont", palette="YlGn", title="NDVI 20180504") +
+tm_shape(shp_communes) +
+  __________(col="black", lwd=2) +
+  tm_text(____="nom") +
+tm_layout(legend.bg.color = "white")
 ```
 
 ---
 
-Pour savoir plus sur les données à télécharger :
+## 5.9. Exercice tmap : raster + vecteur (2)
 
-https://www.somme-tourisme.com/les-crocs-autour-du-marquenterre/saint-quentin-en-tourmont/randopic0800000j
+Le fichier *Lescrocs.gpx* contient le tracé de la randonnée 
+"Les crocs - Autour du Marquenterre". Avec *tmap*, créer une carte avec : 
+- l'occupation du sol avec le raster *CLC12_D080_NIV2.tif* (voir 5.7) 
+- le tracé de la rando en noir, épaisseur = 2, type = pointillé ("dotted")
+satellite en couleur naturelle et l'itinéraire de randonnée en blanc.
 
-https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/
+```{r exerciceB_tmap, eval=FALSE}
+trace_rando <- readOGR(dsn="data2/Lescrocs.gpx", layer="tracks")
+# affichage carte
+tm_shape(rast_clc80_niv2) +
+  tm_raster(style=_____, palette=df_nom$PAL, 
+            title="CLC 2012") +
+tm_shape(trace_rando) +
+  tm_lines(col=_______, lwd=_, lty=________) 
+```
+
 

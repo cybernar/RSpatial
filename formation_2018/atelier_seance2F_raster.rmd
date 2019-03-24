@@ -26,6 +26,7 @@ Chargement des packages pour le TP 5
 library(raster)
 library(rgdal)
 library(RColorBrewer)
+library(tmap)
 ```
 
 ---
@@ -106,7 +107,7 @@ ndvi_by_clc_mean <- zonal(x=rast_ndvi, z=rast_clc80_niv2, fun="mean")
 
 ---
 
-### 6.2.1. Exercice `zonal`
+### 6.2.1. Exercice zonal
 
 **Exercice** : à partir de *rast_ndvi* et *rast_clc80_niv2*, créer un `data.frame` 
 qui montre, pour chaque type d'occupation du sol, quelle est la moyenne et la dispersion
@@ -126,7 +127,7 @@ head(df_stats_by_clc)
 
 ---
 
-## 6.3. Extraction de valeurs et stats zonales avec `extract`
+## 6.3. Extraction de valeurs et stats zonales avec extract
 
 La fonction `extract` prend en entrée un raster `x` et une source de données vectorielles `y` (points, lignes ou polygones).
 
@@ -159,6 +160,13 @@ ndvi_by_polygone <- extract(x=rast_ndvi, y=shp_clc_utm, fun=mean, na.rm=F)
 shp_clc_utm$ndvi_mean <- as.numeric(ndvi_by_polygone)
 polygones_with_ndvi <- as.logical(!is.na(ndvi_by_polygone))
 shp_clc_utm2 <- shp_clc_utm[polygones_with_ndvi,]
+```
+
+---
+
+### 6.3.2. Extraction de valeurs avec des polygones
+
+```{r extract_plot}
 plot(rast_ndvi,col=pal_YlGr,breaks=lim)
 plot(shp_clc_utm2, add=T, col=pal_YlGr[findInterval(shp_clc_utm2$ndvi_mean, lim)])
 ```
@@ -187,15 +195,17 @@ La fonction `focal` calcule pour chaque pixel du raster en entrée une valeur d'
 mr1 <- matrix(1, nrow=3, ncol=3)
 # une fenetre rectangulaire avec une somme = 1
 mr2 <- matrix(1/9, nrow=3, ncol=3)
-# une fenetre circulaire de 50 m de rayon (soit 11x11)
+# une fenetre circulaire de 50 m de rayon (soit 11x11) avec une somme = 1
 mc1 <- focalWeight(rast_ndvi, d=50, type='circle')
+# une fenetre circulaire de 50 m de rayon avec poids 0/1
+mc2 <- mc1 * sum(mc1>0)
 ```
 
 Remarque : la fenêtre a toujours des dimensions impaires (3x3, 5x5...) 
 
 --- 
 
-### 6.4.2. Exemples d'utilisation de la fonction `focal`
+### 6.4.2. Exemples d'utilisation de la fonction focal
 
 - Lissage de données raster : moyenne des valeurs ds un rayon de n mètres, gaussienne avec un rayon de recherche
 - Dilatation / érosion : dilater les zones avec des pixels forêts
@@ -216,8 +226,56 @@ rast_focal_c1 <- focal(x=rast_ndvi, w=mc1)
 
 ---
 
-### 6.4.4. Exercice : mode, nombre de valeurs uniques
-**TODO**
+### 6.4.4. Exemple : mode, nombre de valeurs uniques
+
+A partir de *rast_clc80_niv2*, calculer dans une fenêtre circulaire de 50 m autour
+de chaque pixel :
+- le mode (valeur majoritaire)
+- la diversité (nombre de valeurs différentes)
+
+```{r focal 2}
+# fonction diversite
+diversity <- function (x) {
+  x <- x[x > 0]
+  length(unique(x))
+}
+# fonction mode
+getmode <- function(x) {
+  x <- x[x > 0]
+  uniqx <- unique(x)
+  uniqx[which.max(tabulate(match(x, uniqx)))]
+}
+# raster diversite
+rast_divers_50m <- focal(x=rast_clc80_niv2, w=mc2, fun=diversity)
+# raster mode
+rast_mode_50m <- focal(x=rast_clc80_niv2, w=mc2, fun=getmode)
+```
+
+---
+
+### 6.4.4. Exemple : mode, nombre de valeurs uniques
+
+```{r tmap_diversity}
+# raster diversite
+tm_shape(rast_divers_50m) +
+  tm_raster(style="cat", palette="OrRd", title="N") +
+tm_scale_bar(size=0.4, breaks=c(0,1,2)) +
+tm_layout(title="Diversity", legend.bg.color = "white")
+```
+
+---
+
+### 6.4.4. Exemple : mode, nombre de valeurs uniques
+
+```{r tmap_mode}
+# raster mode
+pal_clc <- c("#E6004D", "#A600CC", "#FFA6FF", "#FFFFA8", "#E6E64D", "#FFE6A6",
+             "#80FF00", "#CCF24D", "#E6E6E6", "#A6A6FF", "#CCCCFF", "#00CCF2", "#00FFA6")
+tm_shape(rast_mode_50m) +
+  tm_raster(style="cat", palette=pal_clc, legend.show=FALSE) +
+tm_scale_bar(size=0.4, breaks=c(0,1,2)) +
+tm_layout(title="Mode")
+```
 
 ---
 

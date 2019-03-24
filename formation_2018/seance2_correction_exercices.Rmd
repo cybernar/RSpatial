@@ -1,7 +1,7 @@
 ---
 title: "Le package raster : correction des exercices"
 author: "CEFE-CNRS"
-date: "février 2019"
+date: "mars 2019"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -21,27 +21,14 @@ library(raster)
 library(rgdal)
 library(raster)
 library(ggplot2)
-```
-
-Télécharger + décompresser données
-```{r DL data, eval=FALSE}
-# dl TP2
-URL1 <- "https://data.biogeo.ucdavis.edu/data/worldclim/v2.0/tif/base/wc2.0_10m_prec.zip"
-URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/02/S2_Marquenterre_20180504.zip"
-download.file(URL1, "data/wc2.0_10m_prec.zip")
-download.file(URL2, "data/S2_Marquenterre_20180504.zip")
-unzip("data/wc2.0_10m_prec.zip", exdir="data/worldclim")
-unzip("data/S2_Marquenterre_20180504.zip", exdir="data")
-# dl TP 4
-URL3 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/02/CLC.zip"
-download.file(URL3, "data/CLC.zip")
-unzip("data/CLC.zip", exdir="data")
-
+library(tmap)
+library(openxlsx)
+library(dplyr)
 ```
 
 ## 2.2. Lire un raster
 ```{r Lecture fichier}
-rast_prec01 <- raster("data/worldclim/wc2.0_10m_prec_01.tif")
+rast_prec01 <- raster("data2/worldclim/wc2.0_10m_prec_01.tif")
 ```
 
 ## 2.5. Exercice 1 : extraire des valeurs
@@ -68,16 +55,16 @@ extract(rast_prec01, villes_coords)
 
 ## 3.2. La classe RasterBrick
 ```{r Lire une image satellite}
-#rast_sentinel2 <- brick("data/S2_Marquenterre_20180504.tif")
+rast_sentinel2 <- brick("data2/S2_Marquenterre_20180504.tif")
 # probleme pour knitter ? utiliser le chemin complet 
-rast_sentinel2 <- brick("D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif")
+#rast_sentinel2 <- brick("D:/GitRepo/RSpatial/data/S2_Marquenterre_20180504.tif")
 ```
 
 ## 3.6. La classe RasterStack
 
 ```{r Création d une stack à partir de 12 fichiers GeoTIFF}
 # liste des fichiers wc2*.tif dans le répertoire WorldClim
-list_fich <- list.files(path="data/WorldClim", pattern="wc2.*\\.tif", full.names=T)
+list_fich <- list.files(path="data2/WorldClim", pattern="wc2.*\\.tif", full.names=T)
 rast_precip <- stack(list_fich, quick=T)
 # changeons les noms des 12 couches
 names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MAY", "PREC.JUN",
@@ -88,6 +75,14 @@ names(rast_precip) <- c("PREC.JAN", "PREC.FEB", "PREC.MAR", "PREC.APR", "PREC.MA
 ```{r Extraire les couches R et PIR}
 rast_red <- raster(rast_sentinel2, layer=3)
 rast_nir <- raster(rast_sentinel2, layer=4)
+```
+
+## 3.10. Exemple: extraire des couches et calculer le NDVI 
+
+```{r Calculer le NDVI}
+# NDVI = (PIR - R) / (PIR + R)
+rast_ndvi <- (rast_nir - rast_red) / (rast_nir + rast_red)
+plot(rast_ndvi)
 ```
 
 ## 3.11. **Exercice:** algèbre raster
@@ -148,13 +143,77 @@ veryrainyplace <- xyFromCell(rast_prec_annuel, i)
 veryrainyplace
 ```
 
+
 # TP4. Rastérisation de données vecteur.
 
 **TODO: exercices rasterize**
 
+
 # TP5. Visualisation des données raster
 
-**TODO: exercices tmap**
+## 5.7.1. HOWTO : tmap + raster CLC + palette Hexa
+
+```{r Lecture_nomenclature_CLC, message=FALSE, fig.show="hide"}
+rast_clc80_niv2 <- raster("data2/CLC/CLC12_D080_NIV2.tif")
+# lire fichier nomenclature, feuille 2
+f_xls <- "data2/CLC/CLC_nomenclature.xlsx"
+df_nom <- read.xlsx(f_xls, sheet=2)
+df_nom <- transmute(df_nom,
+                 CODE = as.numeric(code_clc_niveau_2),
+                 LIB_FR = libelle_fr,
+                 PAL = rgb(as.numeric(rouge),
+                           as.numeric(vert),
+                           as.numeric(bleu),
+                           maxColorValue = 255)
+                 )
+df_nom <- filter(df_nom, CODE %in% unique(rast_clc80_niv2))
+# plot tmap
+tm_shape(rast_clc80_niv2) +
+  tm_raster(style="cat", palette=df_nom$PAL, 
+            title="Corine Land Cover 2012")
+```
+
+## 5.8. Exercice tmap : raster + vecteur (1)
+
+Le shapefile "communes-20190101-dep80.shp" contient les communes du département 
+de la Somme sous forme de polygones. 
+
+Avec *tmap*, affichez le NDVI et le contour des communes en noir. Avec `?tm_polygons`, 
+cherchez la fonction qui permet d'afficher uniquement le contour des polygones sans 
+remplissage. Avec la fonction `tm_text`, affichez les noms des communes, tirés de la 
+colonne __nom__.
+
+```{r exerciceA_tmap, warning=FALSE}
+# lire shapefile communes DEP80
+shp_communes <- readOGR(dsn="data2/OSM80", layer="communes-20190101-dep80")
+# affiche NDVI palette continue + limite des communes 
+tm_shape(rast_ndvi) +
+  tm_raster(style="cont", palette="YlGn", title="NDVI 20180504") +
+tm_shape(shp_communes) +
+  tm_borders(col="black", lwd=2) +
+  tm_text(text="nom") +
+tm_layout(legend.bg.color = "white")
+```
+
+
+## 5.9. Exercice tmap : raster + vecteur (2)
+
+Le fichier *Lescrocs.gpx* contient le tracé de la randonnée 
+"Les crocs - Autour du Marquenterre". Avec *tmap*, créer une carte avec : 
+- l'occupation du sol avec le raster *CLC12_D080_NIV2.tif* (voir 5.7) 
+- le tracé de la rando en noir, épaisseur = 2, type = pointillé ("dotted")
+satellite en couleur naturelle et l'itinéraire de randonnée en blanc.
+
+```{r exerciceB_tmap}
+trace_rando <- readOGR(dsn="data2/Lescrocs.gpx", layer="tracks")
+# affichage carte
+tm_shape(rast_clc80_niv2) +
+  tm_raster(style="cat", palette=df_nom$PAL, 
+            title="CLC 2012") +
+tm_shape(trace_rando) +
+  tm_lines(col="black", lwd=2, lty="dotted") 
+```
+
 
 # TP6. Masques. Statistiques zonales. Statistiques focales.
 
@@ -162,8 +221,8 @@ veryrainyplace
 
 ```{r TP6 charger donnees}
 # chargement des donnees
-rast_ndvi <- raster("data/NDVI_S2A_20180504_T31UCR.tif")
-rast_clc80_niv2 <- raster("data/CLC/CLC12_D080_NIV2.tif")
+rast_ndvi <- raster("data2/NDVI_S2A_20180504_T31UCR.tif")
+rast_clc80_niv2 <- raster("data2/CLC/CLC12_D080_NIV2.tif")
 pal_YlGr <- brewer.pal(5,"YlGn")
 lim <- c(-1, 0, 0.2, 0.5, 0.8, 1)
 ```
@@ -239,10 +298,8 @@ test <- extract(x=rast_clc80_niv2, y=cbind(px, py), buffer=1000,
 Réponse : à partir de CLC niveau 2, calcul **dans un rayon de 1000 mètres** autour 
 de chaque pixel le **nombre de types d'occupation du sol différents**.
 
-### 6.4.4. Exercice : mode, nombre de valeurs uniques
-**TODO**
-
 ### 6.4.5. Exercice : dilatation
+
 Exemple de dilatation sur des données binaires avec avec fenêtre de 3x3 : https://en.wikipedia.org/wiki/Dilation_(morphology)
 https://docs.opencv.org/2.4/doc/tutorials/imgproc/erosion_dilatation/erosion_dilatation.html
 

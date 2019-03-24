@@ -92,7 +92,7 @@ Exemple : création d'un objet "stack" avec les précipitations sur 12 mois.
 
 ```{r Création d une stack à partir de 12 fichiers GeoTIFF}
 # liste des fichiers wc2*.tif dans le répertoire WorldClim
-list_fich <- list.files(path="data2/WorldClim", pattern="wc2.*\\.tif", full.names=T)
+list_fich <- list.files(path="data2/worldclim", pattern="wc2.*\\.tif", full.names=T)
 rast_precip <- stack(list_fich, quick=T)
 rast_precip
 # changeons les noms des 12 couches
