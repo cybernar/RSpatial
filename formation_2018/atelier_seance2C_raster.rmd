@@ -174,6 +174,8 @@ rast_ndvi2 <- calc(rast_sentinel2, f_ndvi)
 
 ---
 
+
+
 ## 3.13. **Exercice:** opérations sur un raster multi-couches 
 
 Q1) Extraire les 12 valeurs mensuelles de précipitation pour les villes de Montpellier et Paris avec `extract` (cf. `villes_coords` dans l'exercice 1).
