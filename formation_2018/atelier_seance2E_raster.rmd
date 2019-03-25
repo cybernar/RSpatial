@@ -33,11 +33,11 @@ library(dplyr)
 library(tmap)
 library(rgdal)
 
-URL1 <- "https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx"
-#URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/03/OSM80.zip"
-download.file(URL1, "data2/Lescrocs.gpx")
-#download.file(URL2, "data2/OSM80.zip")
-#unzip("data2/OSM80.zip", exdir="data2")
+#URL1 <- "https://picardie.media.tourinsoft.eu/upload/Lescrocs.gpx"
+URL2 <- "http://cartotheque.cefe.cnrs.fr/wp-content/uploads/2019/03/OSM80.zip"
+#download.file(URL1, "data2/Lescrocs.gpx")
+download.file(URL2, "data2/OSM80.zip")
+unzip("data2/OSM80.zip", exdir="data2")
 ```
 
 Pour savoir plus sur les données téléchargées :
